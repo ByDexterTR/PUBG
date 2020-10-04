@@ -13,7 +13,7 @@ public Plugin myinfo =
 	name = "Playerunkown Battlegrounds - Jailbreak Game", 
 	author = "quantum. - ByDexter - Emur", 
 	description = "PUBG plugin specially made for Turkish jailbreak servers.", 
-	version = "0.4 - Beta", 
+	version = "0.5 - Beta", 
 	url = "https://pluginmerkezi.com/"
 };
 
@@ -43,8 +43,8 @@ public void OnPluginStart()
 	BuildPath(Path_SM, datayolu, sizeof(datayolu), "data/pubg/haritalar.txt");
 	
 	g_pubg_sure = CreateConVar("pubg_sure", "30", "Pubg oyunu başlamadan önceki bekleme süresi kaç saniye olsun.", 0, true, 0.0, true, 60.0);
-	g_pubg_spawn = CreateConVar("pubg_spawn", "0", "Bir oyuncunun spawn olduğu yerde başka bir oyuncunun spawn olmamasını sağlar. Cpu tüketimini olumsuz etkileyecektir. Aktif = 1 Pasif = 0");
-	g_pubg_limit = CreateConVar("pubg_oyunculimiti", "0", "Oyun başlamadan önce en az kaç kişi olsun? (T TAKIMINDA)");
+	g_pubg_spawn = CreateConVar("pubg_spawn", "0", "Bir oyuncunun spawn olduğu yerde başka bir oyuncunun spawn olmamasını sağlar. Cpu tüketimini olumsuz etkileyecektir. Aktif = 1 Pasif = 0", 0, true, 0.0, true, 1.0);
+	g_pubg_limit = CreateConVar("pubg_oyunculimiti", "0", "Oyun başlamadan önce en az kaç kişi olsun? (T TAKIMINDA)", 0, true, 0.0, true, 64.0);
 	g_Yetkiliflag = CreateConVar("pubg_yetki_oyun", "r", "Pubg oynunu komutçu harici verebilecek kişilerin yetkisi?");
 	AutoExecConfig(true, "pubgayarlari", "Plugin_Merkezi");
 	
