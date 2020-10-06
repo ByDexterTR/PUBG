@@ -7,8 +7,8 @@
 
 #include "PUBG/Stocks.sp"
 
-#pragma tabsize 0
 #pragma newdecls required
+#pragma semicolon 1
 
 public Plugin myinfo = 
 {
@@ -65,6 +65,7 @@ public void OnPluginStart()
 public void OnMapStart()
 {
 	MapStartNameControl();
+	MapStartDownload();
 	
 	PrecacheModel("pluginmerkezi/pubg/pubg_Birincil.mdl");
 	PrecacheModel("pluginmerkezi/pubg/pubg_Ikincil.mdl");
@@ -74,8 +75,6 @@ public void OnMapStart()
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_weapon_pickup.mp3");
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_game_end.mp3");
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_game_start.mp3");
-	
-	MapStartDownload();
 	
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 	g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
@@ -119,12 +118,15 @@ public Action command_pubg(int client, int args)
 		Menu menu = new Menu(pubg_Handle);
 		menu.SetTitle("PUBG Menüsü\n ");
 		if (basladi)
-			menu.AddItem("Stop", "Oyunu Durdur!\n-----------------------------------");
+			menu.AddItem("Stop", "Oyunu Durdur!\n-----------------------------------\n ");
 		else
-			menu.AddItem("Start", "Oyunu Başlat!\n-----------------------------------");
+			menu.AddItem("Start", "Oyunu Başlat!\n-----------------------------------\n ");
+			
 		menu.AddItem("AirDrop", "Bir AirDrop Gönder ! (Yakında)", ITEMDRAW_DISABLED);
+		
 		if (YetkiDurum(client, "z"))
 			menu.AddItem("Ayarlar", "Oyunun Ayarları!");
+			
 		menu.ExitBackButton = false;
 		menu.ExitButton = true;
 		menu.Display(client, MENU_TIME_FOREVER);
@@ -540,4 +542,4 @@ public void LokasyonlariYukle()
 	data.Rewind();
 	data.ExportToFile(datayolu);
 	delete data;
-}
+} 
