@@ -64,13 +64,13 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-	MapStartNameControl();
+	//MapStartNameControl();
 	MapStartDownload();
 	
 	PrecacheModel("pluginmerkezi/pubg/pubg_Birincil.mdl");
 	PrecacheModel("pluginmerkezi/pubg/pubg_Ikincil.mdl");
 	PrecacheModel("pluginmerkezi/pubg/pubg_Ex.mdl");
-	PrecacheModel("modelspluginmerkezi/pubg/pubg_bomb.mdl");
+	PrecacheModel("pluginmerkezi/pubg/pubg_bomb.mdl");
 	
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_weapon_pickup.mp3");
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_game_end.mp3");
@@ -150,19 +150,27 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 				if (oyuncuspawn_sayisi + 1 < OyuncuSayisiAl(2))
 				{
 					PrintToChat(client, "[SM] \x01Oyuncu spawn sayısı yetersiz.");
+					delete menu;
+					return;
 				}
 			}
 			if (OyuncuSayisiAl(2) <= g_pubg_limit.IntValue)
 			{
 				PrintToChat(client, "[SM] \x01Yeterli sayıda oyuncu bulunmadığı için oyun iptal edildi.");
+				delete menu;
+				return;
 			}
-			if (oyuncuspawn_sayisi <= 0)
+			if (oyuncuspawn_sayisi + 1 <= 0)
 			{
-				PrintToChat(client, "[SM] \x01Oyuncu spawnı bulunmadığı için oyun iptal edildi. !pubgayar yazarak spawn noktaları oluşturabilirsiniz.");
+				PrintToChat(client, "[SM] \x01Yeterli sayıda Oyuncu spawnı bulunmadığı için oyun iptal edildi. !pubgayar yazarak spawn noktaları oluşturabilirsiniz.");
+				delete menu;
+				return;
 			}
-			if (silahspawn_sayisi <= 0)
+			if (silahspawn_sayisi + 1 <= 0)
 			{
-				PrintToChat(client, "[SM] \x01Silah spawnı bulunmadığı için oyun iptal edildi. !pubgayar yazarak spawn noktaları oluşturabilirsiniz.");
+				PrintToChat(client, "[SM] \x01Yeterli sayıda Silah spawnı bulunmadığı için oyun iptal edildi. !pubgayar yazarak spawn noktaları oluşturabilirsiniz.");
+				delete menu;
+				return;
 			}
 			for (int i = 1; i <= MaxClients; i++)
 			{
@@ -174,7 +182,8 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 					if (konumlar_spawn[randomnumber][0] != 0 || g_pubg_spawn.IntValue == 0)
 					{
 						TeleportEntity(i, konumlar_spawn[randomnumber], NULL_VECTOR, NULL_VECTOR);
-						konumlar_spawn[randomnumber][0] = 0.0;
+						if(g_pubg_spawn.IntValue != 0)
+							konumlar_spawn[randomnumber][0] = 0.0;
 					}
 					else
 					{
@@ -201,7 +210,7 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 			PUBG_AyarMenu_Ac(client);
 		}
 	}
-	else if (action == MenuAction_End)
+	if (action == MenuAction_Cancel)
 	{
 		delete menu;
 	}
@@ -400,7 +409,7 @@ public Action event_death(Event event, const char[] name, bool dontBroadcast)
 		basladi = false;
 		RemovePlayerItem(client, 3);
 		GivePlayerItem(client, "weapon_knife");
-		PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı !", client);
+		PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", client);
 	}
 	return Plugin_Continue;
 }
