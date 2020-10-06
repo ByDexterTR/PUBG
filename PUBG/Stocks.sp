@@ -44,7 +44,7 @@ void MapStartDownload()
 	AddFileToDownloadsTable("sound/Plugin_Merkezi/PUBG/pubg_weapon_pickup.mp3");
 	AddFileToDownloadsTable("sound/Plugin_Merkezi/PUBG/pubg_game_end.mp3");
 	AddFileToDownloadsTable("sound/Plugin_Merkezi/PUBG/pubg_game_start.mp3");
-} 
+}
 
 void SetCvar(char cvarName[64], int value)
 {
@@ -85,6 +85,109 @@ public void GetAimCoords(int client, float vector[3])
 	if (TR_DidHit(trace))
 		TR_GetEndPosition(vector, trace);
 	trace.Close();
+}
+
+void Silahlari_Sil(int client)
+{
+	int wpnEnt;
+	for (int wpnSlotIndex = 0; wpnSlotIndex <= 5; wpnSlotIndex++)
+	{
+		while ((wpnEnt = GetPlayerWeaponSlot(client, wpnSlotIndex)) != -1 && IsValidEntity(wpnEnt))
+		{
+			if (!RemovePlayerItem(client, wpnEnt))
+				break;
+			AcceptEntityInput(wpnEnt, "kill");
+		}
+		
+		if (wpnSlotIndex == 3)
+		{
+			int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+			
+			for (int j = 0; j < size; j++)
+			{
+				int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", j);
+				
+				if (weapon > 4096 && weapon != INVALID_ENT_REFERENCE)
+				{
+					weapon = EntRefToEntIndex(weapon);
+				}
+				
+				if (IsValidEdict(weapon) && IsValidEntity(weapon))
+				{
+					char classname[32];
+					if (GetEntityClassname(weapon, classname, sizeof(classname)))
+					{
+						if (strcmp(classname, "weapon_shield") == 0 || strcmp(classname, "weapon_tablet") == 0)
+						{
+							if (RemovePlayerItem(client, weapon))
+							{
+								AcceptEntityInput(weapon, "kill");
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void HizVer(bool durum)
+{
+	for (int i = 1; i < MAXPLAYERS; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+		{
+			if (!durum)
+				SetEntityMoveType(i, MOVETYPE_NONE);
+			else
+				SetEntityMoveType(i, MOVETYPE_WALK);
+		}
+	}
+}
+
+void FFAyarla(int durum)
+{
+	if (GetConVarInt(FindConVar("mp_teammates_are_enemies")) != durum || GetConVarInt(FindConVar("mp_friendlyfire")) != durum)
+	{
+		SetCvar("mp_teammates_are_enemies", durum);
+		SetCvar("mp_friendlyfire", durum);
+	}
+}
+
+void SpawnModel(int sitiuation, float Location[3])
+{
+	if (sitiuation == 1)
+	{
+		int model = CreateEntityByName("prop_dynamic");
+		
+		char propbuffer[256];
+		Format(propbuffer, sizeof(propbuffer), "models/ghost/ghost.mdl");
+		
+		DispatchKeyValue(model, "model", propbuffer);
+		SetEntProp(model, Prop_Send, "m_usSolidFlags", 12);
+		SetEntProp(model, Prop_Data, "m_nSolidType", 6);
+		SetEntProp(model, Prop_Send, "m_CollisionGroup", 1);
+		SetEntPropFloat(model, Prop_Send, "m_flModelScale", 1.0);
+		DispatchSpawn(model);
+		
+		TeleportEntity(model, Location, NULL_VECTOR, NULL_VECTOR);
+	}
+	else if (sitiuation == 2)
+	{
+		int model = CreateEntityByName("prop_dynamic");
+		
+		char propbuffer[256];
+		Format(propbuffer, sizeof(propbuffer), "models/pluginmerkezi/pubg/pubg_Birincil.mdl");
+		
+		DispatchKeyValue(model, "model", propbuffer);
+		SetEntProp(model, Prop_Send, "m_usSolidFlags", 12);
+		SetEntProp(model, Prop_Data, "m_nSolidType", 6);
+		SetEntProp(model, Prop_Send, "m_CollisionGroup", 1);
+		SetEntPropFloat(model, Prop_Send, "m_flModelScale", 0.85);
+		DispatchSpawn(model);
+		
+		TeleportEntity(model, Location, NULL_VECTOR, NULL_VECTOR);
+	}
 }
 
 /*										*/
@@ -166,3 +269,21 @@ bool YetkiDurum(int client, char[] sFlags)
 	}
 	return false;
 }
+
+
+/*										 */
+/*				 INTEGER				 */
+/*										 */
+
+int OyuncuSayisiAl(int team)
+{
+	int oyuncusayisi = 0;
+	for (int i = 1; i < MAXPLAYERS; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == team && IsPlayerAlive(i))
+		{
+			oyuncusayisi++;
+		}
+	}
+	return oyuncusayisi;
+} 
