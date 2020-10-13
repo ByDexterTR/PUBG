@@ -6,10 +6,11 @@ void MapStartNameControl()
 {
 	char map[32];
 	GetCurrentMap(map, sizeof(map));
-	if (StrContains(map, "workshop/") == -1)
-		if (StrContains(map, "/jb_") == -1 || StrContains(map, "/jail_") == -1 || StrContains(map, "/ba_") == -1)
+	if (StrContains(map, "workshop/", false) == -1)
+		if (StrContains(map, "jb_", false) == -1 || StrContains(map, "jail_", false) == -1 || StrContains(map, "ba_", false) == -1)
 		SetFailState("[PUBG] Pubg sadece Jailbreak modunda oynanabilir.");
-	if (StrContains(map, "jb_") == -1 || StrContains(map, "jail_") == -1 || StrContains(map, "ba_") == -1)
+	if (StrContains(map, "workshop/", false) != -1)
+		if (StrContains(map, "/jb_", false) == -1 || StrContains(map, "/jail_", false) == -1 || StrContains(map, "/ba_") == -1)
 		SetFailState("[PUBG] Pubg sadece Jailbreak modunda oynanabilir.");
 }
 
@@ -87,41 +88,63 @@ public void GetAimCoords(int client, float vector[3])
 	trace.Close();
 }
 
+void RastgeleSilahCikar(int client, int class)
+{
+	char silahlar[17][32] =  { "weapon_galilar", "weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_famas", "weapon_awp", "weapon_sg556", "weapon_awp", "weapon_scar20", "weapon_mag7", "weapon_negev", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
+	char bombalar[5][32] =  { "weapon_hegrenade", "weapon_molotov", "weapon_smokegrenade", "weapon_flashbang", "weapon_decoy" };
+	char tabancalar[7][32] =  { "weapon_deagle", "weapon_tec9", "weapon_hkp2000", "weapon_cz75a", "weapon_usp_silencer", "weapon_fiveseven", "weapon_glock" };
+	char ekstralar[3][32] =  { "weapon_shield", "weapon_taser", "weapon_healthshot" };
+	if (IsValidClient(client, true))
+	{
+		if (class == 1)
+			GivePlayerItem(client, silahlar[GetRandomInt(0, 16)]);
+		else if (class == 2)
+			GivePlayerItem(client, bombalar[GetRandomInt(0, 4)]);
+		else if (class == 3)
+			GivePlayerItem(client, tabancalar[GetRandomInt(0, 6)]);
+		else if (class == 4)
+			GivePlayerItem(client, ekstralar[GetRandomInt(0, 2)]);
+	}
+}
+
 void Silahlari_Sil(int client)
 {
-	int wpnEnt;
-	for (int wpnSlotIndex = 0; wpnSlotIndex <= 5; wpnSlotIndex++)
+	if (IsValidClient(client, true))
 	{
-		while ((wpnEnt = GetPlayerWeaponSlot(client, wpnSlotIndex)) != -1 && IsValidEntity(wpnEnt))
+		int wpnEnt;
+		for (int wpnSlotIndex = 0; wpnSlotIndex <= 5; wpnSlotIndex++)
 		{
-			if (!RemovePlayerItem(client, wpnEnt))
-				break;
-			AcceptEntityInput(wpnEnt, "kill");
-		}
-		
-		if (wpnSlotIndex == 3)
-		{
-			int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
-			
-			for (int j = 0; j < size; j++)
+			while ((wpnEnt = GetPlayerWeaponSlot(client, wpnSlotIndex)) != -1 && IsValidEntity(wpnEnt))
 			{
-				int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", j);
+				if (!RemovePlayerItem(client, wpnEnt))
+					break;
+				AcceptEntityInput(wpnEnt, "kill");
+			}
+			
+			if (wpnSlotIndex == 3)
+			{
+				int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 				
-				if (weapon > 4096 && weapon != INVALID_ENT_REFERENCE)
+				for (int j = 0; j < size; j++)
 				{
-					weapon = EntRefToEntIndex(weapon);
-				}
-				
-				if (IsValidEdict(weapon) && IsValidEntity(weapon))
-				{
-					char classname[32];
-					if (GetEntityClassname(weapon, classname, sizeof(classname)))
+					int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", j);
+					
+					if (weapon > 4096 && weapon != INVALID_ENT_REFERENCE)
 					{
-						if (strcmp(classname, "weapon_shield") == 0 || strcmp(classname, "weapon_tablet") == 0)
+						weapon = EntRefToEntIndex(weapon);
+					}
+					
+					if (IsValidEdict(weapon) && IsValidEntity(weapon))
+					{
+						char classname[32];
+						if (GetEntityClassname(weapon, classname, sizeof(classname)))
 						{
-							if (RemovePlayerItem(client, weapon))
+							if (strcmp(classname, "weapon_shield") == 0 || strcmp(classname, "weapon_tablet") == 0)
 							{
-								AcceptEntityInput(weapon, "kill");
+								if (RemovePlayerItem(client, weapon))
+								{
+									AcceptEntityInput(weapon, "kill");
+								}
 							}
 						}
 					}
@@ -131,18 +154,12 @@ void Silahlari_Sil(int client)
 	}
 }
 
-void HizVer(bool durum)
+void CanWalk(int client, bool durum)
 {
-	for (int i = 1; i < MAXPLAYERS; i++)
-	{
-		if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
-		{
-			if (!durum)
-				SetEntityMoveType(i, MOVETYPE_NONE);
-			else
-				SetEntityMoveType(i, MOVETYPE_WALK);
-		}
-	}
+	if (durum)
+		SetEntityMoveType(client, MOVETYPE_WALK);
+	else
+		SetEntityMoveType(client, MOVETYPE_NONE);
 }
 
 void FFAyarla(int durum)
@@ -151,42 +168,6 @@ void FFAyarla(int durum)
 	{
 		SetCvar("mp_teammates_are_enemies", durum);
 		SetCvar("mp_friendlyfire", durum);
-	}
-}
-
-void SpawnModel(int sitiuation, float Location[3])
-{
-	if (sitiuation == 1)
-	{
-		int model = CreateEntityByName("prop_dynamic");
-		
-		char propbuffer[256];
-		Format(propbuffer, sizeof(propbuffer), "models/ghost/ghost.mdl");
-		
-		DispatchKeyValue(model, "model", propbuffer);
-		SetEntProp(model, Prop_Send, "m_usSolidFlags", 12);
-		SetEntProp(model, Prop_Data, "m_nSolidType", 6);
-		SetEntProp(model, Prop_Send, "m_CollisionGroup", 1);
-		SetEntPropFloat(model, Prop_Send, "m_flModelScale", 1.0);
-		DispatchSpawn(model);
-		
-		TeleportEntity(model, Location, NULL_VECTOR, NULL_VECTOR);
-	}
-	else if (sitiuation == 2)
-	{
-		int model = CreateEntityByName("prop_dynamic");
-		
-		char propbuffer[256];
-		Format(propbuffer, sizeof(propbuffer), "models/pluginmerkezi/pubg/pubg_Birincil.mdl");
-		
-		DispatchKeyValue(model, "model", propbuffer);
-		SetEntProp(model, Prop_Send, "m_usSolidFlags", 12);
-		SetEntProp(model, Prop_Data, "m_nSolidType", 6);
-		SetEntProp(model, Prop_Send, "m_CollisionGroup", 1);
-		SetEntPropFloat(model, Prop_Send, "m_flModelScale", 0.85);
-		DispatchSpawn(model);
-		
-		TeleportEntity(model, Location, NULL_VECTOR, NULL_VECTOR);
 	}
 }
 
