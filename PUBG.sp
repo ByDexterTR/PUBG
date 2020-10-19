@@ -342,7 +342,7 @@ public Action OnStartTouch(int entity, int client)
 	
 	char modelyolu[PLATFORM_MAX_PATH];
 	GetEntPropString(entity, Prop_Data, "m_ModelName", modelyolu, sizeof(modelyolu));
-	if (StrContains(modelyolu, "pubg_birincil", false) != -1)
+	if (StrContains(modelyolu, "pubg_birincil", true) != -1)
 	{
 		RastgeleSilahCikar(client, 1);
 		Ekran_Renk_Olustur(client, { 207, 117, 0, 255 } );
@@ -427,11 +427,20 @@ public Action event_death(Event event, const char[] name, bool dontBroadcast)
 		FFAyarla(0);
 		YeriTemizle(1);
 		YeriTemizle(2);
-		int client = GetClientOfUserId(event.GetInt("attacker"));
+		int attacker = GetClientOfUserId(event.GetInt("attacker"));
+		int victim = GetClientOfUserId(event.GetInt("userid"));
+		if(victim == attacker)
+		{
+			for(int i = 1; i <= MaxClients; i++)
+			{
+				if(IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+					attacker = i;
+			}
+		}
 		basladi = false;
-		Silahlari_Sil(client);
-		GivePlayerItem(client, "weapon_knife");
-		PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", client);
+		Silahlari_Sil(attacker);
+		GivePlayerItem(attacker, "weapon_knife");
+		PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
 	}
 	return Plugin_Continue;
 }
@@ -603,11 +612,13 @@ public void LokasyonlariYukle()
 			char buffer[16];
 			IntToString(i, buffer, sizeof(buffer));
 			if(data.GetNum(buffer, -1) == -1)
+			{
+				data.GoBack();
 				break;
+			}
 			else
 			{
 				data.GetVector(buffer, konumlar_spawn[i - 1]);
-				data.GoBack();
 				oyuncuspawn_sayisi++;
 				continue;
 			}
@@ -622,6 +633,7 @@ public void LokasyonlariYukle()
 			else
 			{
 				data.GetVector(buffer, konumlar_silah[i - 1]);
+				konumlar_silah[i-1][2] += 32;
 				silahspawn_sayisi++;
 				continue;
 			}
