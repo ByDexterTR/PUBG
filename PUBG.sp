@@ -84,11 +84,11 @@ public Action command_pubg(int client, int args)
 	if ((warden_iswarden(client) || YetkiDurum(client, YetkiliflagString)))
 	{
 		Menu menu = new Menu(pubg_Handle);
-		menu.SetTitle("PUBG Menüsü");
+		menu.SetTitle("PUBG Menüsü\n ");
 		if (basladi)
-			menu.AddItem("Stop", "Oyunu Durdur!\n-----------------------------------");
+			menu.AddItem("Stop", "Oyunu Durdur!\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
 		else
-			menu.AddItem("Start", "Oyunu Başlat!\n-----------------------------------");
+			menu.AddItem("Start", "Oyunu Başlat!\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
 		
 		//menu.AddItem("AirDrop", "Bir AirDrop Gönder ! (Yakında)\n ", ITEMDRAW_DISABLED);
 		
@@ -215,7 +215,7 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 void PUBG_AyarMenu_Ac(int client)
 {
 	Menu menu = new Menu(pubg_genelayarmenu);
-	menu.SetTitle("[PUBG] Ayar Menüsü\n-----------------------------------");
+	menu.SetTitle("[PUBG] Ayar Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	menu.AddItem("spawn", "Spawn Ayarları");
 	if (bac)
 		menu.AddItem("binactive", "Bunny: Pasif");
@@ -249,11 +249,11 @@ public int pubg_genelayarmenu(Menu menu, MenuAction action, int param1, int para
 void PUBG_AyarMenu_Ac2(int client)
 {
 	Menu menu = new Menu(pubg_spawnayarmenu);
-	menu.SetTitle("[PUBG] Spawn Ayar Menüsü\n-----------------------------------");
+	menu.SetTitle("[PUBG] Spawn Ayar Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	menu.AddItem("1", "Oyuncu spawn noktası belirle");
-	menu.AddItem("2", "Silah spawn noktası belirle\n-----------------------------------");
+	menu.AddItem("2", "Silah spawn noktası belirle\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	menu.AddItem("3", "Oyuncu spawn noktalarını sıfırla");
-	menu.AddItem("4", "Silah spawn noktalarını sıfırla\n-----------------------------------");
+	menu.AddItem("4", "Silah spawn noktalarını sıfırla\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	if (gozukuyor)
 		menu.AddItem("Hide", "Spawn Noktalarını: Gizle\nMapten mape farklılık göstererek sunucunuzu çökertebilir.");
 	else
@@ -391,6 +391,16 @@ void PUBG_Baslat_Pre()
 		}
 	}
 	basladi = true;
+	if (bac)
+	{
+		SetCvar("sv_enablebunnyhopping", 0);
+		SetCvar("sv_autobunnyhopping", 0);
+	}
+	else
+	{
+		SetCvar("sv_enablebunnyhopping", 1);
+		SetCvar("sv_autobunnyhopping", 1);
+	}
 	gerisayim_sure = g_pubg_sure.IntValue;
 	CreateTimer(1.0, gerisayim, _, TIMER_REPEAT);
 }
@@ -429,11 +439,11 @@ public Action event_death(Event event, const char[] name, bool dontBroadcast)
 		YeriTemizle(2);
 		int attacker = GetClientOfUserId(event.GetInt("attacker"));
 		int victim = GetClientOfUserId(event.GetInt("userid"));
-		if(victim == attacker)
+		if (victim == attacker)
 		{
-			for(int i = 1; i <= MaxClients; i++)
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				if(IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
 					attacker = i;
 			}
 		}
@@ -611,7 +621,7 @@ public void LokasyonlariYukle()
 		{
 			char buffer[16];
 			IntToString(i, buffer, sizeof(buffer));
-			if(data.GetNum(buffer, -1) == -1)
+			if (data.GetNum(buffer, -1) == -1)
 			{
 				data.GoBack();
 				break;
@@ -633,7 +643,7 @@ public void LokasyonlariYukle()
 			else
 			{
 				data.GetVector(buffer, konumlar_silah[i - 1]);
-				konumlar_silah[i-1][2] += 32;
+				konumlar_silah[i - 1][2] += 32;
 				silahspawn_sayisi++;
 				continue;
 			}

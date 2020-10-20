@@ -93,7 +93,7 @@ void RastgeleSilahCikar(int client, int class)
 	char silahlar[17][32] =  { "weapon_galilar", "weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_famas", "weapon_awp", "weapon_sg556", "weapon_awp", "weapon_scar20", "weapon_mag7", "weapon_negev", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
 	char bombalar[5][32] =  { "weapon_hegrenade", "weapon_molotov", "weapon_smokegrenade", "weapon_flashbang", "weapon_decoy" };
 	char tabancalar[7][32] =  { "weapon_deagle", "weapon_tec9", "weapon_hkp2000", "weapon_cz75a", "weapon_usp_silencer", "weapon_fiveseven", "weapon_glock" };
-	char ekstralar[3][32] =  { "weapon_shield", "weapon_taser", "weapon_healthshot" };
+	char ekstralar[4][32] =  { "weapon_shield", "weapon_taser", "weapon_healthshot", "pm_armor" };
 	if (IsValidClient(client, true))
 	{
 		if (class == 1)
@@ -103,7 +103,16 @@ void RastgeleSilahCikar(int client, int class)
 		else if (class == 3)
 			GivePlayerItem(client, tabancalar[GetRandomInt(0, 6)]);
 		else if (class == 4)
-			GivePlayerItem(client, ekstralar[GetRandomInt(0, 2)]);
+		{
+			int ex = GetRandomInt(0, 3);
+			if (ex == 3)
+			{
+				SetEntProp(client, Prop_Data, "m_ArmorValue", 100, 1);
+				SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
+			}
+			else
+				GivePlayerItem(client, ekstralar[ex]);
+		}
 	}
 }
 
@@ -112,7 +121,7 @@ void Silahlari_Sil(int client)
 	if (IsValidClient(client, true))
 	{
 		int wpnEnt;
-		for (int wpnSlotIndex = 0; wpnSlotIndex <= 5; wpnSlotIndex++)
+		for (int wpnSlotIndex = 0; wpnSlotIndex <= 13; wpnSlotIndex++)
 		{
 			while ((wpnEnt = GetPlayerWeaponSlot(client, wpnSlotIndex)) != -1 && IsValidEntity(wpnEnt))
 			{
