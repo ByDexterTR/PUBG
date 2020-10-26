@@ -61,21 +61,18 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-	//MapStartNameControl();
-	MapStartDownload();
-	
+	MapStartNameControl();
 	PrecacheModel("pluginmerkezi/pubg/pubg_Birincil.mdl");
 	PrecacheModel("pluginmerkezi/pubg/pubg_Ikincil.mdl");
 	PrecacheModel("pluginmerkezi/pubg/pubg_Ex.mdl");
 	PrecacheModel("pluginmerkezi/pubg/pubg_bomb.mdl");
 	PrecacheModel("player/custom_player/legacy/tm_balkan_variantg.mdl");
+	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
+	g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
 	
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_weapon_pickup.mp3");
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_game_end.mp3");
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_game_start.mp3");
-	
-	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
-	g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
 }
 
 public Action command_pubg(int client, int args)
@@ -90,7 +87,7 @@ public Action command_pubg(int client, int args)
 		else
 			menu.AddItem("Start", "Oyunu Başlat!\n▬▬▬▬▬▬▬▬▬▬");
 		
-		//menu.AddItem("AirDrop", "Bir AirDrop Gönder ! (Yakında)\n ", ITEMDRAW_DISABLED);
+		//menu.AddItem("AirDrop", "Bir AirDrop Gönder", ITEMDRAW_DISABLED);
 		
 		if (YetkiDurum(client, "z"))
 		{
@@ -157,7 +154,7 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 			{
 				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T)
 				{
-					CS_RespawnPlayer(i); // Armorları siliyor :d
+					CS_RespawnPlayer(i);
 					int randomnumber = GetRandomInt(0, oyuncuspawn_sayisi);
 					if (konumlar_spawn[randomnumber][0] != 0 || g_pubg_spawn.IntValue == 0)
 					{
@@ -398,6 +395,8 @@ void PUBG_Baslat_Pre()
 		{
 			Silahlari_Sil(i);
 			CanWalk(i, false);
+			SetEntProp(i, Prop_Data, "m_ArmorValue", 0);
+			SetEntProp(i, Prop_Send, "m_bHasHelmet", 0);
 			int iMelee = GivePlayerItem(i, "weapon_fists");
 			EquipPlayerWeapon(i, iMelee);
 		}
@@ -433,8 +432,6 @@ public Action gerisayim(Handle timer)
 				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T)
 				{
 					CanWalk(i, true);
-					SetEntProp(i, Prop_Data, "m_ArmorValue", 0);
-					SetEntProp(i, Prop_Send, "m_bHasHelmet", 0);
 				}
 			}
 		}

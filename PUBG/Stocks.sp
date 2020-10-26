@@ -6,12 +6,21 @@ void MapStartNameControl()
 {
 	char map[32];
 	GetCurrentMap(map, sizeof(map));
-	if (StrContains(map, "workshop/", false) == -1)
-		if (StrContains(map, "jb_", false) == -1 || StrContains(map, "jail_", false) == -1 || StrContains(map, "ba_", false) == -1)
+	if (strncmp(map, "workshop/", 9, false) == 0)
+	{
+		if (StrContains(map, "/jb_", false) == -1 && StrContains(map, "/jail_", false) == -1 && StrContains(map, "/ba_", false) == -1)
+		{
+			SetFailState("[PUBG] Pubg sadece Jailbreak modunda oynanabilir.");
+		}
+	}
+	else if (strncmp(map, "jb_", 3, false) != 0 && strncmp(map, "jail_", 5, false) != 0 && strncmp(map, "ba_", 3, false) != 0)
+	{
 		SetFailState("[PUBG] Pubg sadece Jailbreak modunda oynanabilir.");
-	if (StrContains(map, "workshop/", false) != -1)
-		if (StrContains(map, "/jb_", false) == -1 || StrContains(map, "/jail_", false) == -1 || StrContains(map, "/ba_") == -1)
-		SetFailState("[PUBG] Pubg sadece Jailbreak modunda oynanabilir.");
+	}
+	else
+	{
+		MapStartDownload();
+	}
 }
 
 void MapStartDownload()
