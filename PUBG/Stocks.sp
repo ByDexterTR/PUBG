@@ -198,14 +198,12 @@ void SendAirDrop(float Location[3])
 	/*SetEntProp(airdrop, Prop_Send, "m_usSolidFlags", 12);
 	SetEntProp(airdrop, Prop_Data, "m_nSolidType", 6);
 	SetEntProp(airdrop, Prop_Send, "m_CollisionGroup", 2);*/
+	SetEntPropString(airdrop, Prop_Data, "m_iName", "airdrop");
+	SetEntProp(airdrop, Prop_Data, "m_nSolidType", 6);
 	DispatchSpawn(airdrop);
-	SetEntityRenderColor(airdrop, 255, 0, 0, 255);
+	SetEntityGravity(airdrop, 0.05);
 	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
 }
-
-/*										*/
-/*				 BOOL					*/
-/*										*/
 
 public bool TraceEntityFilterPlayer(int entity, int contentsMask)
 {

@@ -6,6 +6,7 @@
 #include <emitsoundany>
 
 #include "PUBG/Stocks.sp"
+#include "PUBG/airdrop.sp"
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -58,6 +59,11 @@ public void OnPluginStart()
 	g_Yetkiliflag = CreateConVar("sm_pubg_admin_flag", "b", "Pubg oynunu komutçu harici verebilecek kişilerin yetkisi?");
 	g_AirDrops = CreateConVar("sm_pubg_airdrops", "1", "Pubg oynununda Komutçu air drop yollayabilsin mi?", 0, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "Pubg", "Plugin_Merkezi");
+	
+	m_flSimulationTime = FindSendPropInfo("CBaseEntity", "m_flSimulationTime");
+    m_flProgressBarStartTime = FindSendPropInfo("CCSPlayer", "m_flProgressBarStartTime");
+    m_iProgressBarDuration = FindSendPropInfo("CCSPlayer", "m_iProgressBarDuration");
+    m_iBlockingUseActionInProgress = FindSendPropInfo("CCSPlayer", "m_iBlockingUseActionInProgress");
 }
 
 public void OnMapStart()
