@@ -23,7 +23,7 @@ public Plugin myinfo =
 static char datayolu[PLATFORM_MAX_PATH];
 
 //ConVar
-ConVar g_pubg_sure = null, g_pubg_spawn = null, g_pubg_limit = null, g_Yetkiliflag = null;
+ConVar g_pubg_sure = null, g_pubg_spawn = null, g_pubg_limit = null, g_Yetkiliflag = null, g_AirDrops = null;
 char YetkiliflagString[32];
 
 //Konum Şeyleri
@@ -56,6 +56,7 @@ public void OnPluginStart()
 	g_pubg_spawn = CreateConVar("sm_pubg_spawn", "0", "Bir oyuncunun spawn olduğu yerde başka bir oyuncunun spawn olmamasını sağlar. Cpu tüketimini olumsuz etkileyecektir. Aktif = 1 Pasif = 0", 0, true, 0.0, true, 1.0);
 	g_pubg_limit = CreateConVar("sm_pubg_minplayer", "0", "Oyun başlamadan önce en az kaç kişi olsun? (T TAKIMINDA)", 0, true, 0.0, true, 64.0);
 	g_Yetkiliflag = CreateConVar("sm_pubg_admin_flag", "b", "Pubg oynunu komutçu harici verebilecek kişilerin yetkisi?");
+	g_AirDrops = CreateConVar("sm_pubg_airdrops", "1", "Pubg oynununda Komutçu air drop yollayabilsin mi?", 0, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "Pubg", "Plugin_Merkezi");
 }
 
@@ -67,6 +68,7 @@ public void OnMapStart()
 	PrecacheModel("pluginmerkezi/pubg/pubg_Ex.mdl");
 	PrecacheModel("pluginmerkezi/pubg/pubg_bomb.mdl");
 	PrecacheModel("player/custom_player/legacy/tm_balkan_variantg.mdl");
+	PrecacheModel("props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl");
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 	g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
 	
@@ -87,7 +89,7 @@ public Action command_pubg(int client, int args)
 		else
 			menu.AddItem("Start", "Oyunu Başlat!\n▬▬▬▬▬▬▬▬▬▬");
 		
-		//menu.AddItem("AirDrop", "Bir AirDrop Gönder", ITEMDRAW_DISABLED);
+		menu.AddItem("AirDrop", "Bir AirDrop Gönder", g_AirDrops.IntValue == 1 ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
 		
 		if (YetkiDurum(client, "z"))
 		{
@@ -198,6 +200,13 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 					}
 				}
 			}
+		}
+		else if (StrEqual(Item, "AirDrop", false))
+		{
+			float AimCoords[3];
+			GetAimCoords(client, AimCoords);
+			SendAirDrop(AimCoords);
+			PrintHintText(client, "[PUBG] Air drop yola çıktı!");
 		}
 		else if (StrEqual(Item, "Ayarlar", false))
 		{

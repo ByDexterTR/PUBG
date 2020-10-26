@@ -190,6 +190,19 @@ void FFAyarla(int durum)
 	}
 }
 
+void SendAirDrop(float Location[3])
+{
+	Location[2] += 1024;
+	int airdrop = CreateEntityByName("prop_physics_override");
+	DispatchKeyValue(airdrop, "model", "models/props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl");
+	/*SetEntProp(airdrop, Prop_Send, "m_usSolidFlags", 12);
+	SetEntProp(airdrop, Prop_Data, "m_nSolidType", 6);
+	SetEntProp(airdrop, Prop_Send, "m_CollisionGroup", 2);*/
+	DispatchSpawn(airdrop);
+	SetEntityRenderColor(airdrop, 255, 0, 0, 255);
+	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
+}
+
 /*										*/
 /*				 BOOL					*/
 /*										*/
