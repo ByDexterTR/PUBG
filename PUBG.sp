@@ -43,8 +43,8 @@ int g_WeaponParent;
 
 public void OnPluginStart()
 {
-	CreateDirectory("addons/sourcemod/data/pubg", 3);
-	BuildPath(Path_SM, datayolu, sizeof(datayolu), "data/pubg/haritalar.txt");
+	CreateDirectory("addons/sourcemod/data/PluginMerkezi/Pubg", 3);
+	BuildPath(Path_SM, datayolu, sizeof(datayolu), "data/PluginMerkezi/Pubg/locations.txt");
 	
 	RegConsoleCmd("sm_pubg", command_pubg);
 	HookEvent("player_death", event_death, EventHookMode_Post);
@@ -84,11 +84,11 @@ public Action command_pubg(int client, int args)
 	if ((warden_iswarden(client) || YetkiDurum(client, YetkiliflagString)))
 	{
 		Menu menu = new Menu(pubg_Handle);
-		menu.SetTitle("PUBG Menüsü\n ");
+		menu.SetTitle("PUBG Menüsü\n▬▬▬▬▬▬▬▬▬▬");
 		if (basladi)
-			menu.AddItem("Stop", "Oyunu Durdur!\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+			menu.AddItem("Stop", "Oyunu Durdur!\n▬▬▬▬▬▬▬▬▬▬");
 		else
-			menu.AddItem("Start", "Oyunu Başlat!\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+			menu.AddItem("Start", "Oyunu Başlat!\n▬▬▬▬▬▬▬▬▬▬");
 		
 		//menu.AddItem("AirDrop", "Bir AirDrop Gönder ! (Yakında)\n ", ITEMDRAW_DISABLED);
 		
@@ -125,18 +125,17 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 				YeriTemizle(3);
 				gozukuyor = false;
 			}
-			ServerCommand("sm_msay \n PUBG Başlıyor Birazdan Ayarlar Anlatılacak\n Dikkatle Dinle !");
 			LokasyonlariYukle();
 			if (g_pubg_spawn.IntValue == 1)
 			{
-				if (oyuncuspawn_sayisi + 1 < OyuncuSayisiAl(2))
+				if (oyuncuspawn_sayisi + 1 < OyuncuSayisiAl(CS_TEAM_T))
 				{
 					PrintToChat(client, "[SM] \x01Oyuncu spawn sayısı yetersiz.");
 					delete menu;
 					return;
 				}
 			}
-			if (OyuncuSayisiAl(2) <= g_pubg_limit.IntValue)
+			if (OyuncuSayisiAl(CS_TEAM_T) <= g_pubg_limit.IntValue)
 			{
 				PrintToChat(client, "[SM] \x01Yeterli sayıda oyuncu bulunmadığı için oyun iptal edildi.");
 				delete menu;
@@ -144,13 +143,13 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 			}
 			if (oyuncuspawn_sayisi + 1 <= 0)
 			{
-				PrintToChat(client, "[SM] \x01Yeterli sayıda Oyuncu spawnı bulunmadığı için oyun iptal edildi. !pubgayar yazarak spawn noktaları oluşturabilirsiniz.");
+				PrintToChat(client, "[SM] \x01Yeterli sayıda Oyuncu spawnı bulunmadığı için oyun iptal edildi. Pubg menüsünden spawn noktaları oluşturabilirsiniz.");
 				delete menu;
 				return;
 			}
 			if (silahspawn_sayisi + 1 <= 0)
 			{
-				PrintToChat(client, "[SM] \x01Yeterli sayıda Silah spawnı bulunmadığı için oyun iptal edildi. !pubgayar yazarak spawn noktaları oluşturabilirsiniz.");
+				PrintToChat(client, "[SM] \x01Yeterli sayıda Silah spawnı bulunmadığı için oyun iptal edildi. Pubg menüsünden spawn noktaları oluşturabilirsiniz.");
 				delete menu;
 				return;
 			}
@@ -187,6 +186,8 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 			YeriTemizle(2);
 			FFAyarla(0);
 			PrintToChatAll("[SM] \x02PUBG \x01Oyunu \x0E%N \x01Tarafından Bitirildi!", client);
+			SetCvar("sv_enablebunnyhopping", 1);
+			SetCvar("sv_autobunnyhopping", 1);
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (IsClientInGame(i) && !IsFakeClient(i))
@@ -215,32 +216,37 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 void PUBG_AyarMenu_Ac(int client)
 {
 	Menu menu = new Menu(pubg_genelayarmenu);
-	menu.SetTitle("[PUBG] Ayar Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+	menu.SetTitle("[PUBG] Ayar Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	menu.AddItem("spawn", "Spawn Ayarları");
 	if (bac)
-		menu.AddItem("binactive", "Bunny: Pasif");
+		menu.AddItem("bunny", "Bunny: Pasif");
 	else
-		menu.AddItem("bactive", "Bunny: Aktif");
+		menu.AddItem("bunny", "Bunny: Aktif");
 	menu.ExitBackButton = false;
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public int pubg_genelayarmenu(Menu menu, MenuAction action, int param1, int param2)
+public int pubg_genelayarmenu(Menu menu, MenuAction action, int client, int position)
 {
 	if (action == MenuAction_Select)
 	{
 		char item[32];
-		menu.GetItem(param2, item, sizeof(item));
+		menu.GetItem(position, item, sizeof(item));
 		if (StrEqual(item, "spawn"))
-			PUBG_AyarMenu_Ac2(param1);
-		if (StrEqual(item, "bactive") || (StrEqual(item, "binactive")))
+			PUBG_AyarMenu_Ac2(client);
+		if (StrEqual(item, "bunny"))
 		{
 			bac = !bac;
-			PUBG_AyarMenu_Ac(param1);
+			PUBG_AyarMenu_Ac(client);
 		}
 	}
-	if (action == MenuAction_End)
+	else if (action == MenuAction_Cancel)
+	{
+		if (position == MenuCancel_Exit)
+			command_pubg(client, 0);
+	}
+	else if (action == MenuAction_End)
 	{
 		delete menu;
 	}
@@ -249,49 +255,55 @@ public int pubg_genelayarmenu(Menu menu, MenuAction action, int param1, int para
 void PUBG_AyarMenu_Ac2(int client)
 {
 	Menu menu = new Menu(pubg_spawnayarmenu);
-	menu.SetTitle("[PUBG] Spawn Ayar Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+	menu.SetTitle("[PUBG] Spawn Ayar Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	menu.AddItem("1", "Oyuncu spawn noktası belirle");
-	menu.AddItem("2", "Silah spawn noktası belirle\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+	menu.AddItem("2", "Silah spawn noktası belirle\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	menu.AddItem("3", "Oyuncu spawn noktalarını sıfırla");
-	menu.AddItem("4", "Silah spawn noktalarını sıfırla\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+	menu.AddItem("4", "Silah spawn noktalarını sıfırla\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	if (gozukuyor)
-		menu.AddItem("Hide", "Spawn Noktalarını: Gizle\nMapten mape farklılık göstererek sunucunuzu çökertebilir.");
+		menu.AddItem("Hide", "Spawn Noktalarını: Gizle\nHaritanıza göre sunucunuzu çökertebilir!");
 	else
 	{
-		menu.AddItem("Show", "Spawn Noktalarını: Göster\nMapten mape farklılık göstererek sunucunuzu çökertebilir.");
+		menu.AddItem("Show", "Spawn Noktalarını: Göster\nHaritanıza göre sunucunuzu çökertebilir!");
 	}
 	gorenoyuncu = client;
-	menu.ExitBackButton = true;
+	menu.ExitBackButton = false;
+	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public int pubg_spawnayarmenu(Menu menu, MenuAction action, int param1, int param2)
+public int pubg_spawnayarmenu(Menu menu, MenuAction action, int client, int position)
 {
 	if (action == MenuAction_Select)
 	{
 		char item[32];
-		menu.GetItem(param2, item, sizeof(item));
+		menu.GetItem(position, item, sizeof(item));
 		if (StrEqual(item, "Hide"))
 		{
 			YeriTemizle(3);
 			gozukuyor = false;
-			gorenoyuncu = 0;
-			PUBG_AyarMenu_Ac2(param1);
+			gorenoyuncu = -1;
+			PUBG_AyarMenu_Ac2(client);
 		}
 		else if (StrEqual(item, "Show"))
 		{
 			ShowModels();
 			gozukuyor = true;
-			PUBG_AyarMenu_Ac2(param1);
+			PUBG_AyarMenu_Ac2(client);
 		}
 		else
 		{
 			int sayi = StringToInt(item);
-			LokasyonKaydet(param1, sayi);
-			PUBG_AyarMenu_Ac2(param1);
+			LokasyonKaydet(client, sayi);
+			PUBG_AyarMenu_Ac2(client);
 		}
 	}
-	if (action == MenuAction_End)
+	else if (action == MenuAction_Cancel)
+	{
+		if (position == MenuCancel_Exit)
+			PUBG_AyarMenu_Ac(client);
+	}
+	else if (action == MenuAction_End)
 	{
 		delete menu;
 	}
@@ -410,18 +422,25 @@ public Action gerisayim(Handle timer)
 	if (basladi && gerisayim_sure != 0)
 	{
 		gerisayim_sure--;
-		PrintHintTextToAll("[PUBG] Oyunun başlamasına son %d saniye.", gerisayim_sure);
 		if (gerisayim_sure == 0)
 		{
 			PrintHintTextToAll("[PUBG] PUBG Oyunu Başladı !!");
 			SilahlariSpawnla();
-			EmitSoundToAllAny("Plugin_Merkezi/PUBG/pubg_game_end.mp3", SOUND_FROM_PLAYER, 1, 30);
+			EmitSoundToAllAny("Plugin_Merkezi/PUBG/pubg_game_start.mp3", SOUND_FROM_PLAYER, 1, 30);
 			FFAyarla(1);
 			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (IsClientInGame(i) && !IsFakeClient(i))
+				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T)
+				{
 					CanWalk(i, true);
+					SetEntProp(i, Prop_Data, "m_ArmorValue", 0);
+					SetEntProp(i, Prop_Send, "m_bHasHelmet", 0);
+				}
 			}
+		}
+		else
+		{
+			PrintHintTextToAll("[PUBG] Oyunun başlamasına son %d saniye.", gerisayim_sure);
 		}
 	}
 	else
@@ -429,10 +448,9 @@ public Action gerisayim(Handle timer)
 	return Plugin_Continue;
 }
 
-/***************************** Hooklar *****************************/
 public Action event_death(Event event, const char[] name, bool dontBroadcast)
 {
-	if (OyuncuSayisiAl(2) == 1)
+	if (OyuncuSayisiAl(CS_TEAM_T) == 1)
 	{
 		FFAyarla(0);
 		YeriTemizle(1);
@@ -464,7 +482,6 @@ public Action event_end(Event event, const char[] name, bool dontBroadcast)
 	}
 	return Plugin_Continue;
 }
-/*******************************************************************/
 
 void SpawnModel(int Model, float Location[3])
 {
@@ -475,6 +492,7 @@ void SpawnModel(int Model, float Location[3])
 		Format(propbuffer, sizeof(propbuffer), "models/player/custom_player/legacy/tm_balkan_variantg.mdl");
 		DispatchKeyValue(s_model, "model", propbuffer);
 		SetEntPropFloat(s_model, Prop_Send, "m_flModelScale", 1.0);
+		SetVariantString("surrender");
 	}
 	else if (Model == 2)
 	{
@@ -482,11 +500,13 @@ void SpawnModel(int Model, float Location[3])
 		Format(propbuffer, sizeof(propbuffer), "models/pluginmerkezi/pubg/pubg_birincil.mdl");
 		DispatchKeyValue(s_model, "model", propbuffer);
 		SetEntPropFloat(s_model, Prop_Send, "m_flModelScale", 0.85);
+		SetVariantString("none");
 	}
 	SetEntProp(s_model, Prop_Send, "m_usSolidFlags", 12);
 	SetEntProp(s_model, Prop_Data, "m_nSolidType", 6);
 	SetEntProp(s_model, Prop_Send, "m_CollisionGroup", 1);
 	DispatchSpawn(s_model);
+	AcceptEntityInput(s_model, "SetAnimation");
 	TeleportEntity(s_model, Location, NULL_VECTOR, NULL_VECTOR);
 	SDKHook(s_model, SDKHook_SetTransmit, SetTransmit);
 }
@@ -577,7 +597,7 @@ void LokasyonKaydet(int client, int mode)
 		else if (mode == 2)
 			data.JumpToKey("Weapons", true);
 		else if (mode == 3)
-			data.DeleteKey("Players"); // Bunu silince silah spawnını da siliyor ne yarramı yiyicez
+			data.DeleteKey("Players");
 		else if (mode == 4)
 			data.DeleteKey("Weapons");
 		if (mode == 1 || mode == 2)
@@ -590,7 +610,7 @@ void LokasyonKaydet(int client, int mode)
 				{
 					data.SetVector(buffer, konum);
 					konum[2] += 8.0;
-					TE_SetupBeamRingPoint(konum, 0.0, 32.0, g_BeamSprite, g_HaloSprite, 0, 60, 2.5, 5.0, 1.0, { 200, 120, 255, 255 }, 450, 0);
+					TE_SetupBeamRingPoint(konum, 0.0, 32.0, g_BeamSprite, g_HaloSprite, 0, 60, 1.0, 5.0, 1.0, { 200, 120, 255, 255 }, 450, 0);
 					TE_SendToClient(client);
 					konum[2] -= 8.0;
 					break;
@@ -616,36 +636,40 @@ public void LokasyonlariYukle()
 	oyuncuspawn_sayisi = -1, silahspawn_sayisi = -1;
 	if (data.JumpToKey(map, false))
 	{
-		data.JumpToKey("Players", false);
-		for (int i = 1; i <= 200; i++)
+		if (data.JumpToKey("Players", false))
 		{
-			char buffer[16];
-			IntToString(i, buffer, sizeof(buffer));
-			if (data.GetNum(buffer, -1) == -1)
+			for (int i = 1; i <= 200; i++)
 			{
-				data.GoBack();
-				break;
-			}
-			else
-			{
-				data.GetVector(buffer, konumlar_spawn[i - 1]);
-				oyuncuspawn_sayisi++;
-				continue;
+				char buffer[16];
+				IntToString(i, buffer, sizeof(buffer));
+				if (data.GetNum(buffer, -1) == -1)
+				{
+					data.GoBack();
+					break;
+				}
+				else
+				{
+					data.GetVector(buffer, konumlar_spawn[i - 1]);
+					oyuncuspawn_sayisi++;
+					continue;
+				}
 			}
 		}
-		data.JumpToKey("Weapons", false);
-		for (int i = 1; i <= 200; i++)
+		if (data.JumpToKey("Weapons", false))
 		{
-			char buffer[16];
-			IntToString(i, buffer, sizeof(buffer));
-			if (data.GetNum(buffer, -1) == -1)
-				break;
-			else
+			for (int i = 1; i <= 200; i++)
 			{
-				data.GetVector(buffer, konumlar_silah[i - 1]);
-				konumlar_silah[i - 1][2] += 32;
-				silahspawn_sayisi++;
-				continue;
+				char buffer[16];
+				IntToString(i, buffer, sizeof(buffer));
+				if (data.GetNum(buffer, -1) == -1)
+					break;
+				else
+				{
+					data.GetVector(buffer, konumlar_silah[i - 1]);
+					konumlar_silah[i - 1][2] += 32;
+					silahspawn_sayisi++;
+					continue;
+				}
 			}
 		}
 	}

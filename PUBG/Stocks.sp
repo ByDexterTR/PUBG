@@ -109,6 +109,7 @@ void RastgeleSilahCikar(int client, int class)
 			{
 				SetEntProp(client, Prop_Data, "m_ArmorValue", 100, 1);
 				SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
+				PrintHintText(client, "[PUBG] Armor Kazandın Ve Kuşanıldı !");
 			}
 			else
 				GivePlayerItem(client, ekstralar[ex]);
