@@ -99,14 +99,15 @@ public void GetAimCoords(int client, float vector[3])
 
 void RastgeleSilahCikar(int client, int class)
 {
-	char silahlar[17][32] =  { "weapon_galilar", "weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_famas", "weapon_awp", "weapon_sg556", "weapon_awp", "weapon_scar20", "weapon_mag7", "weapon_negev", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
+	char silahlar[11][32] =  {"weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_famas", "weapon_mag7", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
 	char bombalar[5][32] =  { "weapon_hegrenade", "weapon_molotov", "weapon_smokegrenade", "weapon_flashbang", "weapon_decoy" };
 	char tabancalar[7][32] =  { "weapon_deagle", "weapon_tec9", "weapon_hkp2000", "weapon_cz75a", "weapon_usp_silencer", "weapon_fiveseven", "weapon_glock" };
 	char ekstralar[4][32] =  { "weapon_shield", "weapon_taser", "weapon_healthshot", "pm_armor" };
+	char airdrop[5][32] =  { "weapon_awp", "weapon_scar20", "weapon_g3sg1", "weapon_negev", "weapon_m249" };
 	if (IsValidClient(client, true))
 	{
 		if (class == 1)
-			GivePlayerItem(client, silahlar[GetRandomInt(0, 16)]);
+			GivePlayerItem(client, silahlar[GetRandomInt(0, 10)]);
 		else if (class == 2)
 			GivePlayerItem(client, bombalar[GetRandomInt(0, 4)]);
 		else if (class == 3)
@@ -122,6 +123,15 @@ void RastgeleSilahCikar(int client, int class)
 			}
 			else
 				GivePlayerItem(client, ekstralar[ex]);
+		}
+		else if (class == 5)
+		{
+				SetEntProp(client, Prop_Data, "m_ArmorValue", 100, 1);
+				SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
+				PrintHintText(client, "[PUBG] Armor Kazandın Ve Kuşanıldı !");
+				
+				GivePlayerItem(client, airdrop[GetRandomInt(0, 4)]);
+				GivePlayerItem(client, "weapon_healthshot");
 		}
 	}
 }
@@ -192,17 +202,20 @@ void FFAyarla(int durum)
 
 void SendAirDrop(float Location[3])
 {
-	Location[2] += 1024;
+	Location[2] += 1000;
 	int airdrop = CreateEntityByName("prop_physics_override");
 	DispatchKeyValue(airdrop, "model", "models/props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl");
-	/*SetEntProp(airdrop, Prop_Send, "m_usSolidFlags", 12);
-	SetEntProp(airdrop, Prop_Data, "m_nSolidType", 6);
-	SetEntProp(airdrop, Prop_Send, "m_CollisionGroup", 2);*/
 	SetEntPropString(airdrop, Prop_Data, "m_iName", "airdrop");
-	SetEntProp(airdrop, Prop_Data, "m_nSolidType", 6);
-	DispatchSpawn(airdrop);
-	SetEntityGravity(airdrop, 0.05);
 	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
+	DispatchSpawn(airdrop);
+	
+	SetEntityGravity(airdrop, 0.05);
+	CreateTimer(2.0, OnTheGround, airdrop, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action OnTheGround(Handle timer, int entity)
+{
+	return Plugin_Continue;
 }
 
 public bool TraceEntityFilterPlayer(int entity, int contentsMask)

@@ -5,9 +5,6 @@
 #include <warden>
 #include <emitsoundany>
 
-#include "PUBG/Stocks.sp"
-#include "PUBG/airdrop.sp"
-
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -38,9 +35,12 @@ int gorenoyuncu = 0;
 //Beamler
 int g_BeamSprite = -1;
 int g_HaloSprite = -1;
-
+int g_iSmoke = -1;
 int g_model = -1;
 int g_WeaponParent;
+
+#include "PUBG/Stocks.sp"
+#include "PUBG/airdrop.sp"
 
 public void OnPluginStart()
 {
@@ -61,9 +61,9 @@ public void OnPluginStart()
 	AutoExecConfig(true, "Pubg", "Plugin_Merkezi");
 	
 	m_flSimulationTime = FindSendPropInfo("CBaseEntity", "m_flSimulationTime");
-    m_flProgressBarStartTime = FindSendPropInfo("CCSPlayer", "m_flProgressBarStartTime");
-    m_iProgressBarDuration = FindSendPropInfo("CCSPlayer", "m_iProgressBarDuration");
-    m_iBlockingUseActionInProgress = FindSendPropInfo("CCSPlayer", "m_iBlockingUseActionInProgress");
+   	m_flProgressBarStartTime = FindSendPropInfo("CCSPlayer", "m_flProgressBarStartTime");
+   	m_iProgressBarDuration = FindSendPropInfo("CCSPlayer", "m_iProgressBarDuration");
+   	m_iBlockingUseActionInProgress = FindSendPropInfo("CCSPlayer", "m_iBlockingUseActionInProgress");
 }
 
 public void OnMapStart()
@@ -77,6 +77,7 @@ public void OnMapStart()
 	PrecacheModel("props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl");
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 	g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
+	g_iSmoke = PrecacheDecal("materials/sprites/smoke.vmt");
 	
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_weapon_pickup.mp3");
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_game_end.mp3");
@@ -560,6 +561,7 @@ void ShowModels()
 void YeriTemizle(int mode)
 {
 	char weapon[64];
+	char modelyolu[PLATFORM_MAX_PATH];
 	for (int i = MaxClients; i < GetMaxEntities(); i++)
 	if (IsValidEdict(i) && IsValidEntity(i))
 	{
@@ -574,14 +576,12 @@ void YeriTemizle(int mode)
 		}
 		else if (mode == 2)
 		{
-			char modelyolu[PLATFORM_MAX_PATH];
 			GetEntPropString(i, Prop_Data, "m_ModelName", modelyolu, sizeof(modelyolu));
-			if (StrContains(modelyolu, "pubg_") != -1)
+			if (StrContains(modelyolu, "pubg_") != -1 || StrContains(modelyolu, "metal_crate_003_48_low.mdl") != -1)
 				AcceptEntityInput(i, "kill");
 		}
 		else if (mode == 3)
 		{
-			char modelyolu[PLATFORM_MAX_PATH];
 			GetEntPropString(i, Prop_Data, "m_ModelName", modelyolu, sizeof(modelyolu));
 			if (StrContains(modelyolu, "tm_balkan_variantg.mdl", false) != -1)
 				AcceptEntityInput(i, "kill");
