@@ -99,7 +99,7 @@ public void GetAimCoords(int client, float vector[3])
 
 void RastgeleSilahCikar(int client, int class)
 {
-	char silahlar[11][32] =  {"weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_famas", "weapon_mag7", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
+	char silahlar[11][32] =  { "weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_famas", "weapon_mag7", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
 	char bombalar[5][32] =  { "weapon_hegrenade", "weapon_molotov", "weapon_smokegrenade", "weapon_flashbang", "weapon_decoy" };
 	char tabancalar[7][32] =  { "weapon_deagle", "weapon_tec9", "weapon_hkp2000", "weapon_cz75a", "weapon_usp_silencer", "weapon_fiveseven", "weapon_glock" };
 	char ekstralar[4][32] =  { "weapon_shield", "weapon_taser", "weapon_healthshot", "pm_armor" };
@@ -119,19 +119,19 @@ void RastgeleSilahCikar(int client, int class)
 			{
 				SetEntProp(client, Prop_Data, "m_ArmorValue", 100, 1);
 				SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
-				PrintHintText(client, "[PUBG] Armor Kazandın Ve Kuşanıldı !");
+				PrintHintText(client, "[PUBG] Armor Kazandın Ve Kuşanıldı!");
 			}
 			else
 				GivePlayerItem(client, ekstralar[ex]);
 		}
 		else if (class == 5)
 		{
-				SetEntProp(client, Prop_Data, "m_ArmorValue", 100, 1);
-				SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
-				PrintHintText(client, "[PUBG] Armor Kazandın Ve Kuşanıldı !");
-				
-				GivePlayerItem(client, airdrop[GetRandomInt(0, 4)]);
-				GivePlayerItem(client, "weapon_healthshot");
+			SetEntProp(client, Prop_Data, "m_ArmorValue", 100, 1);
+			SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
+			PrintHintText(client, "[PUBG] Level 3 Armor Ve Kask Buldun!");
+			
+			GivePlayerItem(client, airdrop[GetRandomInt(0, 4)]);
+			GivePlayerItem(client, "weapon_healthshot");
 		}
 	}
 }
