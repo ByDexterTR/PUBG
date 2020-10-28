@@ -13,6 +13,7 @@
 #include "PUBG/Airdrop.sp"
 #include "PUBG/Menus.sp" // Tek kişi test için bu spdeki 9 Satırdaki != 1 yerine != 0 yazınız.
 #include "PUBG/Locations.sp"
+#include "PUBG/Takim.sp"
 
 public Plugin myinfo = 
 {
@@ -25,10 +26,20 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+	g_pubg_sure = CreateConVar("sm_pubg_time", "20", "Pubg oyunu başlamadan önceki bekleme süresi kaç saniye olsun.", 0, true, 0.0, true, 60.0);
+	g_pubg_spawn = CreateConVar("sm_pubg_spawn", "1", "Bir oyuncunun spawn olduğu yerde başka bir oyuncunun spawn olmamasını sağlar. Cpu tüketimini olumsuz etkileyecektir. Aktif = 1 Pasif = 0", 0, true, 0.0, true, 1.0);
+	g_pubg_limit = CreateConVar("sm_pubg_minplayer", "0", "Oyun başlamadan önce en az kaç kişi olsun? (T TAKIMINDA)", 0, true, 0.0, true, 64.0);
+	g_Yetkiliflag = CreateConVar("sm_pubg_admin_flag", "b", "Pubg oynunu komutçu harici verebilecek kişilerin yetkisi?", FCVAR_NOTIFY);
+	g_AirDrops = CreateConVar("sm_pubg_airdrops", "1", "Pubg oynununda Komutçu air drop yollayabilsin mi?", 0, true, 0.0, true, 1.0);
+	g_AirDrops_Time = CreateConVar("sm_pubg_airdrops_time", "5", "AirDrop kaç saniyede açılsın", 0, true, 1.0, true, 20.0);
+	AutoExecConfig(true, "Pubg", "PluginMerkezi");
+	
+	RegConsoleCmd("sm_pubg", command_pubg);
+	RegConsoleCmd("sm_pubgtakim", command_pubgtakim);
+	
 	CreateDirectory("addons/sourcemod/data/PluginMerkezi/Pubg", 3);
 	BuildPath(Path_SM, datayolu, sizeof(datayolu), "data/PluginMerkezi/Pubg/locations.txt");
 	
-	RegConsoleCmd("sm_pubg", command_pubg);
 	HookEvent("player_death", OnClientDeath, EventHookMode_Post);
 	HookEvent("round_start", RoundStartEnd);
 	HookEvent("round_end", RoundStartEnd);
@@ -38,25 +49,18 @@ public void OnPluginStart()
 	m_iProgressBarDuration = FindSendPropInfo("CCSPlayer", "m_iProgressBarDuration");
 	m_iBlockingUseActionInProgress = FindSendPropInfo("CCSPlayer", "m_iBlockingUseActionInProgress");
 	
-	g_pubg_sure = CreateConVar("sm_pubg_time", "20", "Pubg oyunu başlamadan önceki bekleme süresi kaç saniye olsun.", 0, true, 0.0, true, 60.0);
-	g_pubg_spawn = CreateConVar("sm_pubg_spawn", "0", "Bir oyuncunun spawn olduğu yerde başka bir oyuncunun spawn olmamasını sağlar. Cpu tüketimini olumsuz etkileyecektir. Aktif = 1 Pasif = 0", 0, true, 0.0, true, 1.0);
-	g_pubg_limit = CreateConVar("sm_pubg_minplayer", "0", "Oyun başlamadan önce en az kaç kişi olsun? (T TAKIMINDA)", 0, true, 0.0, true, 64.0);
-	g_Yetkiliflag = CreateConVar("sm_pubg_admin_flag", "b", "Pubg oynunu komutçu harici verebilecek kişilerin yetkisi?", FCVAR_NOTIFY);
-	g_AirDrops = CreateConVar("sm_pubg_airdrops", "1", "Pubg oynununda Komutçu air drop yollayabilsin mi?", 0, true, 0.0, true, 1.0);
-	g_AirDrops_Time = CreateConVar("sm_pubg_airdrops_time", "5", "AirDrop kaç saniyede açılsın", 0, true, 1.0, true, 20.0);
-	AutoExecConfig(true, "Pubg", "Plugin_Merkezi");
 	AddServerTag("PluginMerkezi");
 }
 
 public void OnMapStart()
 {
 	MapStartNameControl();
-	PrecacheModel("pluginmerkezi/pubg/pubg_Birincil.mdl");
-	PrecacheModel("pluginmerkezi/pubg/pubg_Ikincil.mdl");
-	PrecacheModel("pluginmerkezi/pubg/pubg_Ex.mdl");
-	PrecacheModel("pluginmerkezi/pubg/pubg_bomb.mdl");
-	PrecacheModel("player/custom_player/legacy/tm_balkan_variantg.mdl");
-	PrecacheModel("props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl");
+	PrecacheModel("pluginmerkezi/pubg/pubg_Birincil.mdl", true);
+	PrecacheModel("pluginmerkezi/pubg/pubg_Ikincil.mdl", true);
+	PrecacheModel("pluginmerkezi/pubg/pubg_Ex.mdl", true);
+	PrecacheModel("pluginmerkezi/pubg/pubg_bomb.mdl", true);
+	PrecacheModel("player/custom_player/legacy/tm_balkan_variantg.mdl", true);
+	PrecacheModel("props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl", true);
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 	g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
 	
@@ -71,16 +75,15 @@ public Action command_pubg(int client, int args)
 	if ((warden_iswarden(client) || YetkiDurum(client, YetkiliflagString)))
 	{
 		Menu menu = new Menu(pubg_Handle);
-		menu.SetTitle("PUBG Menüsü\n▬▬▬▬▬▬▬▬▬▬");
+		menu.SetTitle("PUBG Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
 		if (basladi)
-			menu.AddItem("Stop", "Oyunu Durdur!\n▬▬▬▬▬▬▬▬▬▬");
+			menu.AddItem("Stop", "Oyunu Durdur!");
 		else
-			menu.AddItem("Start", "Oyunu Başlat!\n▬▬▬▬▬▬▬▬▬▬");
+			menu.AddItem("Start", "Oyunu Başlat!");
 		
-		menu.AddItem("AirDrop", "Bir AirDrop Gönder", g_AirDrops.IntValue == 1 ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+		menu.AddItem("AirDrop", "Bir AirDrop Gönder\n▬▬▬▬▬▬▬▬▬▬▬▬▬", g_AirDrops.IntValue == 1 ? basladi ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED : ITEMDRAW_DISABLED);
 		
-		if (YetkiDurum(client, "z"))
-			menu.AddItem("Ayarlar", "Oyunun Ayarları!", basladi ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+		menu.AddItem("Ayarlar", "Oyunun Ayarları!", basladi ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 		
 		menu.ExitBackButton = false;
 		menu.ExitButton = true;
@@ -176,6 +179,8 @@ public Action Remove_Entity(Handle timer, int entity)
 
 void PUBG_Baslat_Pre()
 {
+	if(duo)
+		TakimSifirla();
 	YeriTemizle(1);
 	basladi = true;
 	gerisayim_sure = g_pubg_sure.IntValue;
@@ -211,14 +216,23 @@ public Action gerisayim(Handle timer)
 		gerisayim_sure--;
 		if (gerisayim_sure == 0)
 		{
+			if (duo)
+			{
+				TakimlariBoya();
+			}
 			PrintHintTextToAll("[PUBG] PUBG Oyunu Başladı !!");
 			SilahlariSpawnla();
 			EmitSoundToAllAny("Plugin_Merkezi/PUBG/pubg_game_start.mp3", SOUND_FROM_PLAYER, 1, 30);
 			FFAyarla(1);
 			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T)
+				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
 				{
+					if(takim[i][0] != -1 && duo)
+					{
+						sdkhooklandi[i] = true;
+						SDKHook(i, SDKHook_OnTakeDamage, damagealinca);
+					}
 					CanWalk(i, true);
 				}
 			}
@@ -235,25 +249,64 @@ public Action gerisayim(Handle timer)
 
 public Action OnClientDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if (OyuncuSayisiAl(CS_TEAM_T) == 1)
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
+	int victim = GetClientOfUserId(event.GetInt("userid"));
+	if (duo)
 	{
-		FFAyarla(0);
-		YeriTemizle(1);
-		YeriTemizle(2);
-		int attacker = GetClientOfUserId(event.GetInt("attacker"));
-		int victim = GetClientOfUserId(event.GetInt("userid"));
-		if (victim == attacker)
+		if (OyuncuSayisiAl(CS_TEAM_T) == 2 && takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0]))
 		{
-			for (int i = 1; i <= MaxClients; i++)
+			FinishTheGame();
+			if(IsValidClient(attacker))
 			{
-				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
-					attacker = i;
+				Silahlari_Sil(attacker);
+				GivePlayerItem(attacker, "weapon_knife");
+			}
+			if(IsValidClient(takim[attacker][0]))
+			{
+				Silahlari_Sil(takim[attacker][0]);
+				GivePlayerItem(takim[attacker][0], "weapon_knife");
+			}
+			PrintToChatAll("[SM] \x04Oyunu \x0E%N ve \x0E%N \x01Kazandı!", attacker, takim[attacker][0]);
+		}
+		else if (OyuncuSayisiAl(CS_TEAM_T) == 1)
+		{
+			FinishTheGame();
+			if (victim == attacker)
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+						attacker = i;
+				}
+			}
+			if(IsValidClient(attacker))
+			{
+				Silahlari_Sil(attacker);
+				GivePlayerItem(attacker, "weapon_knife");
+				PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
 			}
 		}
-		basladi = false;
-		Silahlari_Sil(attacker);
-		GivePlayerItem(attacker, "weapon_knife");
-		PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
+	}
+	else
+	{
+		if (OyuncuSayisiAl(CS_TEAM_T) == 1)
+		{
+			FinishTheGame();
+			if (victim == attacker)
+			{
+				for (int i = 1; i <= MaxClients; i++)
+				{
+					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+						attacker = i;
+				}
+			}
+			if(IsValidClient(attacker))
+			{
+				Silahlari_Sil(attacker);
+				GivePlayerItem(attacker, "weapon_knife");
+				PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
+			}
+		}
 	}
 	return Plugin_Continue;
 }
@@ -262,6 +315,11 @@ public Action RoundStartEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	if (basladi)
 	{
+		if (duo)
+		{
+			FinishTheGame();
+			return Plugin_Continue;
+		}
 		FFAyarla(0);
 		basladi = false;
 	}
@@ -354,4 +412,4 @@ void YeriTemizle(int mode)
 				AcceptEntityInput(i, "kill");
 		}
 	}
-}
+} 
