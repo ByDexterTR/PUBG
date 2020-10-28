@@ -99,7 +99,7 @@ public void GetAimCoords(int client, float vector[3])
 
 void RastgeleSilahCikar(int client, int class)
 {
-	char silahlar[11][32] =  { "weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_famas", "weapon_mag7", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
+	char silahlar[11][32] =  { "weapon_ak47", "weapon_m4a1_silencer", "weapon_m4a1", "weapon_famas", "weapon_mag7", "weapon_mp7", "weapon_ump45", "weapon_bizon", "weapon_mp5sd", "weapon_mac10", "weapon_mp9" };
 	char bombalar[5][32] =  { "weapon_hegrenade", "weapon_molotov", "weapon_smokegrenade", "weapon_flashbang", "weapon_decoy" };
 	char tabancalar[7][32] =  { "weapon_deagle", "weapon_tec9", "weapon_hkp2000", "weapon_cz75a", "weapon_usp_silencer", "weapon_fiveseven", "weapon_glock" };
 	char ekstralar[4][32] =  { "weapon_shield", "weapon_taser", "weapon_healthshot", "pm_armor" };
@@ -206,11 +206,30 @@ void SendAirDrop(float Location[3])
 	int airdrop = CreateEntityByName("prop_physics_override");
 	DispatchKeyValue(airdrop, "model", "models/props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl");
 	SetEntPropString(airdrop, Prop_Data, "m_iName", "airdrop");
-	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
 	DispatchSpawn(airdrop);
-	
-	SetEntityGravity(airdrop, 0.05);
+	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
+	if(IsValidEntity(airdrop))
+		SetEntityGravity(airdrop, 0.000005);
+		
+	SetEntityRenderColor(airdrop, 47, 25, 36);
 	CreateTimer(2.0, OnTheGround, airdrop, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+void FinishTheGame()
+{
+	FFAyarla(0);
+	YeriTemizle(1);		
+	YeriTemizle(2);
+	basladi = false;
+	
+	for(int i = 1; i < MAXPLAYERS; i++)
+	{	
+		if(sdkhooklandi[i])
+		{
+			sdkhooklandi[i] = false;
+			SDKUnhook(i, SDKHook_OnTakeDamage, damagealinca);
+		}
+	}
 }
 
 public Action OnTheGround(Handle timer, int entity)

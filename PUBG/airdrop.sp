@@ -59,8 +59,11 @@ public Action OnPlayerRunCmd(int client, int &iButtons, int &iImpulse, float fVe
 		{
 			g_iPlayerPrevButtons[client] = 0;
 			g_OnceStopped[client] = false;
-			airdrop_timer[client] = null;
-			client_airdrop[client] = -1;
+			if (airdrop_timer[client] != null)
+			{
+				delete airdrop_timer[client];
+				airdrop_timer[client] = null;
+			}
 			ResetProgressBar(client);
 		}
 		
@@ -70,16 +73,19 @@ public Action OnPlayerRunCmd(int client, int &iButtons, int &iImpulse, float fVe
 
 public Action airdropac(Handle timer, int client)
 {
-	ResetProgressBar(client);
-	Ekran_Renk_Olustur(client, { 207, 117, 0, 255 } );
-	EmitSoundToClientAny(client, "Plugin_Merkezi/PUBG/pubg_weapon_pickup.mp3", SOUND_FROM_PLAYER, 1, 60);
-	RastgeleSilahCikar(client, 5);
-	
 	char sName[33];
-	GetEntPropString(client_airdrop[client], Prop_Data, "m_iName", sName, sizeof(sName));
-	if (client_airdrop[client] && IsValidEdict(client_airdrop[client]) && StrEqual(sName, "airdrop"))
-		SetEntPropString(client_airdrop[client], Prop_Data, "m_iName", "bos_airdrop");
-	
+	if(client_airdrop[client] && IsValidEdict(client_airdrop[client]))
+	{
+		GetEntPropString(client_airdrop[client], Prop_Data, "m_iName", sName, sizeof(sName));
+		if(StrEqual(sName, "airdrop"))
+		{
+			ResetProgressBar(client);
+			Ekran_Renk_Olustur(client, { 207, 117, 0, 255 } );
+			EmitSoundToClientAny(client, "Plugin_Merkezi/PUBG/pubg_weapon_pickup.mp3", SOUND_FROM_PLAYER, 1, 60);
+			RastgeleSilahCikar(client, 5);
+			SetEntPropString(client_airdrop[client], Prop_Data, "m_iName", "bos_airdrop");
+		}
+	}
 	client_airdrop[client] = -1;
 	return Plugin_Handled;
 }
