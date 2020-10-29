@@ -44,10 +44,10 @@ public void OnPluginStart()
 	HookEvent("round_start", RoundStartEnd);
 	HookEvent("round_end", RoundStartEnd);
 	g_WeaponParent = FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity"); //For clear weapons on ground
-	m_flSimulationTime = FindSendPropInfo("CBaseEntity", "m_flSimulationTime");
-	m_flProgressBarStartTime = FindSendPropInfo("CCSPlayer", "m_flProgressBarStartTime");
-	m_iProgressBarDuration = FindSendPropInfo("CCSPlayer", "m_iProgressBarDuration");
-	m_iBlockingUseActionInProgress = FindSendPropInfo("CCSPlayer", "m_iBlockingUseActionInProgress");
+	m_flSimulationTime = FindSendPropInfo("CBaseEntity", "m_flSimulationTime"); // For AirDrop Opening Effect
+	m_flProgressBarStartTime = FindSendPropInfo("CCSPlayer", "m_flProgressBarStartTime"); // For AirDrop Opening Effect
+	m_iProgressBarDuration = FindSendPropInfo("CCSPlayer", "m_iProgressBarDuration"); // For AirDrop Opening Effect
+	m_iBlockingUseActionInProgress = FindSendPropInfo("CCSPlayer", "m_iBlockingUseActionInProgress"); // For AirDrop Opening Effect----
 	
 	AddServerTag("PluginMerkezi");
 }
@@ -60,7 +60,7 @@ public void OnMapStart()
 	PrecacheModel("pluginmerkezi/pubg/pubg_Ex.mdl", true);
 	PrecacheModel("pluginmerkezi/pubg/pubg_bomb.mdl", true);
 	PrecacheModel("player/custom_player/legacy/tm_balkan_variantg.mdl", true);
-	PrecacheModel("props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl", true);
+	PrecacheModel("props/de_nuke/hr_nuke/metal_crate_001/metal_crate_001_76_low.mdl", true);
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 	g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
 	
@@ -71,9 +71,9 @@ public void OnMapStart()
 
 public Action command_pubg(int client, int args)
 {
+	char YetkiliflagString[2];
 	g_Yetkiliflag.GetString(YetkiliflagString, sizeof(YetkiliflagString));
-	if ((warden_iswarden(client) || YetkiDurum(client, YetkiliflagString)))
-	{
+	if ((warden_iswarden(client) || YetkiDurum(client, YetkiliflagString))) {
 		Menu menu = new Menu(pubg_Handle);
 		menu.SetTitle("PUBG Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
 		if (basladi)
@@ -89,9 +89,8 @@ public Action command_pubg(int client, int args)
 		menu.ExitButton = true;
 		menu.Display(client, MENU_TIME_FOREVER);
 	}
-	else
-	{
-		ReplyToCommand(client, "[SM] \x02PUBG \x01Oyununu Başlatabilmek Için \x0CKomutçu \x01veya \x04Yetkili \x01olmalısın!");
+	else {
+		ReplyToCommand(client, "[SM] \x02PUBG \x01Menüsüne Erişim Icin \x0CKomutçu \x01veya \x04Yetkili \x01olmalısın!");
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -179,7 +178,7 @@ public Action Remove_Entity(Handle timer, int entity)
 
 void PUBG_Baslat_Pre()
 {
-	if(duo)
+	if (duo)
 		TakimSifirla();
 	YeriTemizle(1);
 	basladi = true;
@@ -228,12 +227,12 @@ public Action gerisayim(Handle timer)
 			{
 				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
 				{
-					if(takim[i][0] != -1 && duo)
+					CanWalk(i, true);
+					if (takim[i][0] != -1 && duo)
 					{
 						sdkhooklandi[i] = true;
 						SDKHook(i, SDKHook_OnTakeDamage, damagealinca);
 					}
-					CanWalk(i, true);
 				}
 			}
 		}
@@ -256,12 +255,12 @@ public Action OnClientDeath(Event event, const char[] name, bool dontBroadcast)
 		if (OyuncuSayisiAl(CS_TEAM_T) == 2 && takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0]))
 		{
 			FinishTheGame();
-			if(IsValidClient(attacker))
+			if (IsValidClient(attacker))
 			{
 				Silahlari_Sil(attacker);
 				GivePlayerItem(attacker, "weapon_knife");
 			}
-			if(IsValidClient(takim[attacker][0]))
+			if (IsValidClient(takim[attacker][0]))
 			{
 				Silahlari_Sil(takim[attacker][0]);
 				GivePlayerItem(takim[attacker][0], "weapon_knife");
@@ -279,7 +278,7 @@ public Action OnClientDeath(Event event, const char[] name, bool dontBroadcast)
 						attacker = i;
 				}
 			}
-			if(IsValidClient(attacker))
+			if (IsValidClient(attacker))
 			{
 				Silahlari_Sil(attacker);
 				GivePlayerItem(attacker, "weapon_knife");
@@ -300,7 +299,7 @@ public Action OnClientDeath(Event event, const char[] name, bool dontBroadcast)
 						attacker = i;
 				}
 			}
-			if(IsValidClient(attacker))
+			if (IsValidClient(attacker))
 			{
 				Silahlari_Sil(attacker);
 				GivePlayerItem(attacker, "weapon_knife");
@@ -400,7 +399,7 @@ void YeriTemizle(int mode)
 		else if (mode == 2)
 		{
 			GetEntPropString(i, Prop_Data, "m_ModelName", modelyolu, sizeof(modelyolu));
-			if (StrContains(modelyolu, "pubg_") != -1 || StrContains(modelyolu, "de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low") != -1)
+			if (StrContains(modelyolu, "pubg_") != -1 || StrContains(modelyolu, "de_nuke/hr_nuke/metal_crate_001/metal_crate_001_76_low") != -1)
 				AcceptEntityInput(i, "kill");
 		}
 		else if (mode == 3)

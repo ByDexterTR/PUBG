@@ -200,41 +200,21 @@ void FFAyarla(int durum)
 	}
 }
 
-void SendAirDrop(float Location[3])
-{
-	Location[2] += 1000;
-	int airdrop = CreateEntityByName("prop_physics_override");
-	DispatchKeyValue(airdrop, "model", "models/props/de_nuke/hr_nuke/metal_crate_001/metal_crate_003_48_low.mdl");
-	SetEntPropString(airdrop, Prop_Data, "m_iName", "airdrop");
-	DispatchSpawn(airdrop);
-	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
-	if(IsValidEntity(airdrop))
-		SetEntityGravity(airdrop, 0.000005);
-		
-	SetEntityRenderColor(airdrop, 47, 25, 36);
-	CreateTimer(2.0, OnTheGround, airdrop, TIMER_FLAG_NO_MAPCHANGE);
-}
-
 void FinishTheGame()
 {
 	FFAyarla(0);
-	YeriTemizle(1);		
+	YeriTemizle(1);
 	YeriTemizle(2);
 	basladi = false;
 	
-	for(int i = 1; i < MAXPLAYERS; i++)
-	{	
-		if(sdkhooklandi[i])
+	for (int i = 1; i < MAXPLAYERS; i++)
+	{
+		if (sdkhooklandi[i])
 		{
 			sdkhooklandi[i] = false;
 			SDKUnhook(i, SDKHook_OnTakeDamage, damagealinca);
 		}
 	}
-}
-
-public Action OnTheGround(Handle timer, int entity)
-{
-	return Plugin_Continue;
 }
 
 public bool TraceEntityFilterPlayer(int entity, int contentsMask)

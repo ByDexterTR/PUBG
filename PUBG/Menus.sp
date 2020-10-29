@@ -96,9 +96,9 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 		}
 		else if (StrEqual(Item, "AirDrop", false))
 		{
-			float AimCoords[3];
-			GetAimCoords(client, AimCoords);
-			SendAirDrop(AimCoords);
+			float AimOrigin[3];
+			GetAimCoords(client, AimOrigin);
+			SendAirDrop(AimOrigin);
 			PrintHintText(client, "[PUBG] Air drop yola çıktı!");
 		}
 		else if (StrEqual(Item, "Ayarlar", false))
@@ -117,11 +117,11 @@ Menu PUBG_AyarMenu_Ac(int client)
 	Menu menu = new Menu(pubg_genelayarmenu);
 	menu.SetTitle("[PUBG] Ayar Menüsü\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
 	menu.AddItem("spawn", "Spawn Ayarları", YetkiDurum(client, "z") ? basladi ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
-	if(duo)
+	if (duo)
 		menu.AddItem("duo", "Oyun Modu: Takımlı");
 	else
 		menu.AddItem("duo", "Oyun Modu: Takımsız");
-	if(bac)
+	if (bac)
 		menu.AddItem("bunny", "Bunny: Pasif");
 	else
 		menu.AddItem("bunny", "Bunny: Aktif");
@@ -143,7 +143,7 @@ public int pubg_genelayarmenu(Menu menu, MenuAction action, int client, int posi
 		{
 			duo = !duo;
 			PUBG_AyarMenu_Ac(client).Display(client, MENU_TIME_FOREVER);
-		}	
+		}
 		else if (StrEqual(item, "bunny"))
 		{
 			bac = !bac;
@@ -216,18 +216,18 @@ public int pubg_spawnayarmenu(Menu menu, MenuAction action, int client, int posi
 	{
 		delete menu;
 	}
-} 
+}
 
 
-public void takim_OyuncuMenusuAc(int client)
+Menu takim_OyuncuMenusuAc()
 {
 	char iBuffer[16], Name[32];
 	Menu menu = new Menu(pubg_takimmenusu);
 	menu.SetTitle("[PUBG] Takım Arkadaşını Seç!\n▬▬▬▬▬▬▬▬▬▬▬▬▬");
-	for(int i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i) && takim[i][2] == -1)
-		{	
+		{
 			IntToString(i, iBuffer, sizeof(iBuffer));
 			GetClientName(i, Name, sizeof(Name));
 			menu.AddItem(iBuffer, Name);
@@ -235,45 +235,45 @@ public void takim_OyuncuMenusuAc(int client)
 	}
 	menu.AddItem("", "", ITEMDRAW_NOTEXT); //Bunu koymazsak menü açılmıyor garip
 	menu.ExitButton = true;
-	menu.Display(client, MENU_TIME_FOREVER);
+	return menu;
 }
 
 public int pubg_takimmenusu(Menu menu, MenuAction action, int client, int position)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char item[32];
 		menu.GetItem(position, item, sizeof(item));
-		if(basladi)
+		if (basladi)
 		{
-			if(IsClientInGame(StringToInt(item)) && !IsFakeClient(StringToInt(item)))
+			if (IsClientInGame(StringToInt(item)) && !IsFakeClient(StringToInt(item)))
 			{
-				if(IsPlayerAlive(StringToInt(item)) && GetClientTeam(StringToInt(item)) == CS_TEAM_T && takim[StringToInt(item)][2] == -1)
+				if (IsPlayerAlive(StringToInt(item)) && GetClientTeam(StringToInt(item)) == CS_TEAM_T && takim[StringToInt(item)][2] == -1)
 				{
-					takim_OnayMenusuAc(StringToInt(item), client);
+					takim_OnayMenusuAc(StringToInt(item), client).Display(StringToInt(item), 10);
 					return;
 				}
-				else if(!IsPlayerAlive(StringToInt(item)))
+				else if (!IsPlayerAlive(StringToInt(item)))
 					PrintToChat(client, " \x07[PUBG] \x01Takım isteği göndermek istediğin kişi ölmüş.");
-				else if(GetClientTeam(StringToInt(item)) != 2)
+				else if (GetClientTeam(StringToInt(item)) != 2)
 					PrintToChat(client, " \x07[PUBG] \x01Takım isteği göndermek istediğin kişi T takımında değil.");
-				else if(takim[StringToInt(item)][0] != -1)
+				else if (takim[StringToInt(item)][0] != -1)
 					PrintToChat(client, " \x07[PUBG] \x01Takım isteği göndermek istediğin kişi başka bir takıma girmiş.");
 			}
 			else
 				PrintToChat(client, " \x07[PUBG] \x01Takım isteği göndermek istediğin kişi oyundan çıkmış.");
-			takim_OyuncuMenusuAc(client);
+			takim_OyuncuMenusuAc().Display(client, MENU_TIME_FOREVER);
 		}
 		else
 			PrintToChat(client, " \x07[PUBG] \x01Oyun başladıktan sonra takım isteği gönderemezsin.");
 	}
-	else if(action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		delete menu;
 	}
 }
 
-public void takim_OnayMenusuAc(int client, int onaygonderen)
+Menu takim_OnayMenusuAc(int client, int onaygonderen)
 {
 	takim[client][2] = 1;
 	char titleBuffer[64], iBuffer[16], trickBuffer[32];
@@ -286,27 +286,27 @@ public void takim_OnayMenusuAc(int client, int onaygonderen)
 	menu.AddItem(iBuffer, "Kabul Et!");
 	menu.AddItem(trickBuffer, "Reddet!");
 	menu.ExitButton = true;
-	menu.Display(client, 10);
+	return menu;
 }
 
 public int takim_onaymenu(Menu menu, MenuAction action, int client, int position)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char item[32];
 		menu.GetItem(position, item, sizeof(item));
-		if(StrContains(item, "reddet") != -1)
+		if (StrContains(item, "reddet") != -1)
 		{
 			takim[StringToInt(item)][2] = 0;
 			takim[client][2] = 0;
 		}
 		else
 		{
-			if(basladi)
+			if (basladi)
 			{
-				if(IsClientInGame(StringToInt(item)) && !IsFakeClient(StringToInt(item)))
+				if (IsClientInGame(StringToInt(item)) && !IsFakeClient(StringToInt(item)))
 				{
-					if(IsPlayerAlive(StringToInt(item)) && GetClientTeam(StringToInt(item)) == CS_TEAM_T)
+					if (IsPlayerAlive(StringToInt(item)) && GetClientTeam(StringToInt(item)) == CS_TEAM_T)
 					{
 						float konum[3];
 						konum[2] += 48;
@@ -315,9 +315,9 @@ public int takim_onaymenu(Menu menu, MenuAction action, int client, int position
 						takim[client][0] = StringToInt(item);
 						takim[StringToInt(item)][0] = client;
 					}
-					else if(!IsPlayerAlive(StringToInt(item)))
+					else if (!IsPlayerAlive(StringToInt(item)))
 						PrintToChat(client, " \x07[PUBG] \x01Takım isteğini kabul etmek istediğin kişi ölmüş.");
-					else if(GetClientTeam(StringToInt(item)) != 2)
+					else if (GetClientTeam(StringToInt(item)) != 2)
 						PrintToChat(client, " \x07[PUBG] \x01Takım isteğini kabul etmek istediğin kişi T takımında değil.");
 				}
 				else
@@ -327,8 +327,8 @@ public int takim_onaymenu(Menu menu, MenuAction action, int client, int position
 				PrintToChat(client, " \x07[PUBG] \x01Oyun başladıktan sonra takım isteğini kabul edemezsin.");
 		}
 	}
-	else if(action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		delete menu;
 	}
-}
+} 

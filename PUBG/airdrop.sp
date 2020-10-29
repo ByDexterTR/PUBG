@@ -1,3 +1,31 @@
+void SendAirDrop(float Location[3])
+{
+	Location[2] += 256;
+	int airdrop = CreateEntityByName("prop_physics_multiplayer");
+	DispatchKeyValue(airdrop, "model", "models/props/de_nuke/hr_nuke/metal_crate_001/metal_crate_001_76_low.mdl");
+	DispatchKeyValue(airdrop, "overridescript", /*"inertia,1,damping,0"*/"inertia,1");
+	DispatchKeyValue(airdrop, "physicsmode", "1");
+	DispatchKeyValue(airdrop, "nodamageforces", "1");
+	DispatchKeyValue(airdrop, "spawnflags", "2");
+	SetEntPropString(airdrop, Prop_Data, "m_iName", "airdrop");
+	DispatchSpawn(airdrop);
+	//float Velocity[3] =  0.0;
+	//Velocity[2] + 150.0;
+	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
+	if (IsValidEntity(airdrop))
+		SetEntityGravity(airdrop, 0.1);
+	
+	SetEntityRenderColor(airdrop, 47, 25, 36);
+	SetCvar("sv_turbophysics", 1);
+	CreateTimer(2.5, OnTheGround, airdrop, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action OnTheGround(Handle timer, int entity)
+{
+	SetCvar("sv_turbophysics", 0);
+	return Plugin_Continue;
+}
+
 public Action OnPlayerRunCmd(int client, int &iButtons, int &iImpulse, float fVelocity[3], float fAngles[3], int &iWeapon)
 {
 	if (basladi)
@@ -8,26 +36,25 @@ public Action OnPlayerRunCmd(int client, int &iButtons, int &iImpulse, float fVe
 			int ent = GetClientAimTarget(client, false);
 			if (IsValidEntity(ent))
 			{
-				char sName[33];
-				GetEntPropString(ent, Prop_Data, "m_iName", sName, sizeof(sName));
-				if (StrContains(sName, "airdrop") != -1)
+				if (GetEntitiesDistance(client, ent) < 82.0)
 				{
-					if (StrEqual(sName, "airdrop"))
+					char sName[32];
+					GetEntPropString(ent, Prop_Data, "m_iName", sName, sizeof(sName));
+					if (StrContains(sName, "airdrop") != -1)
 					{
-						if (GetEntitiesDistance(client, ent) < 50.0)
+						if (StrEqual(sName, "airdrop"))
 						{
 							SetProgressBar(client, g_AirDrops_Time.IntValue);
 							client_airdrop[client] = ent;
 							airdrop_timer[client] = CreateTimer(g_AirDrops_Time.FloatValue, airdropac, client, TIMER_FLAG_NO_MAPCHANGE);
 							g_OnceStopped[client] = true;
 						}
+						else if (StrEqual(sName, "bos_airdrop"))
+							PrintCenterText(client, "[PUBG] Bu airdrop boş!");
 					}
-					else if (GetEntitiesDistance(client, ent) < 50.0)
-						PrintCenterText(client, "[PUBG] Bu airdrop boş!");
 				}
 			}
 		}
-		
 		//E'ye basılı tutarken
 		else if (iButtons & IN_USE)
 		{
@@ -53,7 +80,6 @@ public Action OnPlayerRunCmd(int client, int &iButtons, int &iImpulse, float fVe
 				}
 			}
 		}
-		
 		//E'ye basmayı bırakınca
 		else if (g_OnceStopped[client])
 		{
@@ -74,10 +100,10 @@ public Action OnPlayerRunCmd(int client, int &iButtons, int &iImpulse, float fVe
 public Action airdropac(Handle timer, int client)
 {
 	char sName[33];
-	if(client_airdrop[client] && IsValidEdict(client_airdrop[client]))
+	if (client_airdrop[client] && IsValidEdict(client_airdrop[client]))
 	{
 		GetEntPropString(client_airdrop[client], Prop_Data, "m_iName", sName, sizeof(sName));
-		if(StrEqual(sName, "airdrop"))
+		if (StrEqual(sName, "airdrop"))
 		{
 			ResetProgressBar(client);
 			Ekran_Renk_Olustur(client, { 207, 117, 0, 255 } );
