@@ -1,6 +1,6 @@
 void SendAirDrop(float Location[3])
 {
-	Location[2] += 256;
+	Location[2] += 256; // Bu kısmı arttırınca Timerin süresini de arttırmak gerekiyor
 	int airdrop = CreateEntityByName("prop_physics_multiplayer");
 	DispatchKeyValue(airdrop, "model", "models/props/de_nuke/hr_nuke/metal_crate_001/metal_crate_001_76_low.mdl");
 	DispatchKeyValue(airdrop, "overridescript", /*"inertia,1,damping,0"*/"inertia,1");
@@ -9,8 +9,6 @@ void SendAirDrop(float Location[3])
 	DispatchKeyValue(airdrop, "spawnflags", "2");
 	SetEntPropString(airdrop, Prop_Data, "m_iName", "airdrop");
 	DispatchSpawn(airdrop);
-	//float Velocity[3] =  0.0;
-	//Velocity[2] + 150.0;
 	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
 	if (IsValidEntity(airdrop))
 		SetEntityGravity(airdrop, 0.1);
