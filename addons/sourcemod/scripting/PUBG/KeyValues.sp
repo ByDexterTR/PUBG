@@ -96,3 +96,22 @@ public void LokasyonlariYukle()
 	data.ExportToFile(datayolu);
 	delete data;
 }
+
+public void LoadCmdConfig()
+{
+	KeyValues Kv = new KeyValues("CMDS");
+	char sBuffer[256];
+	BuildPath(Path_SM, sBuffer, sizeof(sBuffer), "data/PluginMerkezi/Pubg/BlockCMD.txt");
+	Kv.ExportToFile(sBuffer);
+	
+	if (Kv.GotoFirstSubKey())
+	{
+		do
+		{
+			if (Kv.GetSectionName(sBuffer, sizeof(sBuffer)))
+				AddCommandListener(BlockCMD, sBuffer);
+		}
+		while (Kv.GotoNextKey());
+	}
+	delete Kv;
+} 

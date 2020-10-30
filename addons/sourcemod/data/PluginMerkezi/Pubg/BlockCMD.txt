@@ -1,0 +1,17 @@
+"CMDS"
+{
+	"sm_tp"{}
+	"sm_ayna"{}
+	"sm_3d"{}
+	"sm_cam"{}
+	"sm_mirror"{}
+	"sm_market"{}
+	"sm_shop"{}
+	"sm_bakkal"{}
+	"sm_dukkan"{}
+	"sm_store"{}
+	"sm_env"{}
+	"sm_inv"{}
+	"sm_envanter"{}
+	"sm_inventory"{}
+}
