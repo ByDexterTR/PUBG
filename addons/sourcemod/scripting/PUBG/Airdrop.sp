@@ -7,6 +7,7 @@ void SendAirDrop(float Location[3])
 	DispatchKeyValue(airdrop, "physicsmode", "1");
 	DispatchKeyValue(airdrop, "nodamageforces", "1");
 	DispatchKeyValue(airdrop, "spawnflags", "2");
+	SetEntProp(airdrop, Prop_Send, "m_CollisionGroup", 1);
 	SetEntPropString(airdrop, Prop_Data, "m_iName", "airdrop");
 	DispatchSpawn(airdrop);
 	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
@@ -19,6 +20,16 @@ void SendAirDrop(float Location[3])
 
 public Action OnTheGround(Handle timer, int entity)
 {
+	for (int i = 1; i <= MaxClients; i++)if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
+	{
+		float origin[3];
+		float teleport[3] = 0.0;
+		GetEntPropVector(i, Prop_Send, "m_vecOrigin", origin);
+		if (GetVectorDistance(origin, AirDropLoc) < 76.0)
+		{
+			TeleportEntity(i, teleport, NULL_VECTOR, NULL_VECTOR);
+		}
+	}
 	SetCvar("sv_turbophysics", 0);
 	return Plugin_Continue;
 }

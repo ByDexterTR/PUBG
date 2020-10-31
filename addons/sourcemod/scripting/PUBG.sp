@@ -256,62 +256,65 @@ public Action gerisayim(Handle timer)
 
 public Action OnClientDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	int attacker = GetClientOfUserId(event.GetInt("attacker"));
-	int victim = GetClientOfUserId(event.GetInt("userid"));
-	if (duo)
+	if (basladi)
 	{
-		if (OyuncuSayisiAl(CS_TEAM_T) == 2 && takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0]))
+		int attacker = GetClientOfUserId(event.GetInt("attacker"));
+		int victim = GetClientOfUserId(event.GetInt("userid"));
+		if (duo)
 		{
-			FinishTheGame();
-			if (IsValidClient(attacker))
+			if (OyuncuSayisiAl(CS_TEAM_T) == 2 && takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0]))
 			{
-				Silahlari_Sil(attacker);
-				GivePlayerItem(attacker, "weapon_knife");
-			}
-			if (IsValidClient(takim[attacker][0]))
-			{
-				Silahlari_Sil(takim[attacker][0]);
-				GivePlayerItem(takim[attacker][0], "weapon_knife");
-			}
-			PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01ve \x0E%N \x01Kazandı!", attacker, takim[attacker][0]);
-		}
-		else if (OyuncuSayisiAl(CS_TEAM_T) == 1)
-		{
-			FinishTheGame();
-			if (victim == attacker)
-			{
-				for (int i = 1; i <= MaxClients; i++)
+				FinishTheGame();
+				if (IsValidClient(attacker))
 				{
-					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
-						attacker = i;
+					Silahlari_Sil(attacker);
+					GivePlayerItem(attacker, "weapon_knife");
+				}
+				if (IsValidClient(takim[attacker][0]))
+				{
+					Silahlari_Sil(takim[attacker][0]);
+					GivePlayerItem(takim[attacker][0], "weapon_knife");
+				}
+				PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01ve \x0E%N \x01Kazandı!", attacker, takim[attacker][0]);
+			}
+			else if (OyuncuSayisiAl(CS_TEAM_T) == 1)
+			{
+				FinishTheGame();
+				if (victim == attacker)
+				{
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
+							attacker = i;
+					}
+				}
+				if (IsValidClient(attacker))
+				{
+					Silahlari_Sil(attacker);
+					GivePlayerItem(attacker, "weapon_knife");
+					PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
 				}
 			}
-			if (IsValidClient(attacker))
-			{
-				Silahlari_Sil(attacker);
-				GivePlayerItem(attacker, "weapon_knife");
-				PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
-			}
 		}
-	}
-	else
-	{
-		if (OyuncuSayisiAl(CS_TEAM_T) == 1)
+		else
 		{
-			FinishTheGame();
-			if (victim == attacker)
+			if (OyuncuSayisiAl(CS_TEAM_T) == 1)
 			{
-				for (int i = 1; i <= MaxClients; i++)
+				FinishTheGame();
+				if (victim == attacker)
 				{
-					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
-						attacker = i;
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
+							attacker = i;
+					}
 				}
-			}
-			if (IsValidClient(attacker))
-			{
-				Silahlari_Sil(attacker);
-				GivePlayerItem(attacker, "weapon_knife");
-				PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
+				if (IsValidClient(attacker))
+				{
+					Silahlari_Sil(attacker);
+					GivePlayerItem(attacker, "weapon_knife");
+					PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
+				}
 			}
 		}
 	}
@@ -362,4 +365,4 @@ public Action SetTransmit(int entity, int client)
 		return Plugin_Continue;
 	else
 		return Plugin_Handled;
-}
+} 

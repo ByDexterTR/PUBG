@@ -96,9 +96,9 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 		}
 		else if (StrEqual(Item, "AirDrop", false))
 		{
-			float AimOrigin[3];
-			GetAimCoords(client, AimOrigin);
-			SendAirDrop(AimOrigin);
+			//float AimOrigin[3];
+			GetAimCoords(client, AirDropLoc);
+			SendAirDrop(AirDropLoc);
 			PrintHintText(client, "[PUBG] Air drop yola çıktı!");
 		}
 		else if (StrEqual(Item, "Ayarlar", false))

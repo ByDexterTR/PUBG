@@ -37,6 +37,7 @@ bool sdkhooklandi[MAXPLAYERS + 1] = false;
 // Float
 float konumlar_spawn[200][3];
 float konumlar_silah[200][3];
+float AirDropLoc[3];
 
 // Handle
 Handle airdrop_timer[MAXPLAYERS + 1] = null; 
