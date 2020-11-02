@@ -40,6 +40,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_pubg", command_pubg);
 	RegConsoleCmd("sm_pubgtakim", command_pubgtakim);
 	
+	
 	HookEvent("player_death", OnClientDeath, EventHookMode_Post);
 	HookEvent("round_start", RoundStartEnd);
 	HookEvent("round_end", RoundStartEnd);
@@ -262,8 +263,18 @@ public Action OnClientDeath(Event event, const char[] name, bool dontBroadcast)
 		int victim = GetClientOfUserId(event.GetInt("userid"));
 		if (duo)
 		{
-			if (OyuncuSayisiAl(CS_TEAM_T) == 2 && takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0]))
+			if(OyuncuSayisiAl(CS_TEAM_T) == 2)
 			{
+				if(attacker == victim)
+				{
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i)){
+							attacker = i;
+							break;}
+					}
+				}
+				if(takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0])
 				FinishTheGame();
 				if (IsValidClient(attacker))
 				{

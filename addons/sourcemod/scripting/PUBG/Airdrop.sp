@@ -12,24 +12,31 @@ void SendAirDrop(float Location[3])
 	DispatchSpawn(airdrop);
 	TeleportEntity(airdrop, Location, NULL_VECTOR, NULL_VECTOR);
 	if (IsValidEntity(airdrop))
+	{
+		SDKHook(airdrop, SDKHook_StartTouch, AirDrop_Touch);
 		SetEntityGravity(airdrop, 0.1);
+	}
 	SetEntityRenderColor(airdrop, 255, 87, 51, 255);
 	SetCvar("sv_turbophysics", 1);
 	CreateTimer(3.0, OnTheGround, airdrop, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action OnTheGround(Handle timer, int entity)
+public Action AirDrop_Touch(int entity, int client)
 {
-	for (int i = 1; i <= MaxClients; i++)if (IsClientInGame(i) && !IsFakeClient(i) && IsPlayerAlive(i))
+	if (!(0 < client <= MaxClients) || GetClientTeam(client) != CS_TEAM_T)
+		return;
+	if(GetEntitiesDistance(client, entity) < 50.0)
 	{
 		float origin[3];
-		float teleport[3] = 0.0;
-		GetEntPropVector(i, Prop_Send, "m_vecOrigin", origin);
-		if (GetVectorDistance(origin, AirDropLoc) < 76.0)
-		{
-			TeleportEntity(i, teleport, NULL_VECTOR, NULL_VECTOR);
-		}
+		GetClientAbsOrigin(client, origin);
+		origin[2] += 150.0;
+		TeleportEntity(client, origin, NULL_VECTOR, NULL_VECTOR);
 	}
+}
+
+public Action OnTheGround(Handle timer, int entity)
+{
+	SDKUnhook(entity, SDKHook_StartTouch, AirDrop_Touch);
 	SetCvar("sv_turbophysics", 0);
 	return Plugin_Continue;
 }
@@ -153,7 +160,7 @@ float GetEntitiesDistance(int ent1, int ent2)
 }
 
 //Forked from Franc1sco franug (dev_zones)
-void KnockbackSetVelocity(int client, const float startpoint[3], const float endpoint[3], float magnitude)
+/*void KnockbackSetVelocity(int client, const float startpoint[3], const float endpoint[3], float magnitude)
 {
 	// Create vector from the given starting and ending points.
 	float vector[3];
@@ -167,4 +174,4 @@ void KnockbackSetVelocity(int client, const float startpoint[3], const float end
 	
 	
 	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vector);
-} 
+}*/
