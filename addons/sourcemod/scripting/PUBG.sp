@@ -20,7 +20,7 @@ public Plugin myinfo =
 	name = "Playerunkown Battlegrounds - Jailbreak Game", 
 	author = "quantum. - Emur - ByDexter(Mentally support)", 
 	description = "PUBG plugin specially made for Turkish jailbreak servers.", 
-	version = "0.8.1 - Beta", 
+	version = "0.8.3 - Beta", 
 	url = "https://pluginmerkezi.com/"
 };
 
@@ -71,9 +71,7 @@ public Action command_pubg(int client, int args)
 			menu.AddItem("Start", "Oyunu Başlat!");
 		
 		menu.AddItem("AirDrop", "Bir AirDrop Gönder\n▬▬▬▬▬▬▬▬▬▬▬▬▬", g_AirDrops.IntValue == 1 ? basladi ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED : ITEMDRAW_DISABLED);
-		
 		menu.AddItem("Ayarlar", "Oyunun Ayarları!", basladi ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
-		
 		menu.ExitBackButton = false;
 		menu.ExitButton = true;
 		menu.Display(client, MENU_TIME_FOREVER);
@@ -87,19 +85,16 @@ public Action command_pubg(int client, int args)
 
 public Action BlockCMD(int client, char[] command, int args)
 {
-	if (basladi)
+	if (basladi && IsValidClient(client))
 	{
-		if (IsValidClient(client))
+		if (IsPlayerAlive(client))
 		{
-			if (IsPlayerAlive(client))
-			{
-				PrintToChat(client, "[SM] \x02PUBG \x01oynanıyor iken bu komutlar engellenmiştir!");
-				return Plugin_Stop;
-			}
-			else
-			{
-				return Plugin_Continue;
-			}
+			PrintToChat(client, "[SM] \x02PUBG \x01oynanıyor iken bu komutlar engellenmiştir!");
+			return Plugin_Stop;
+		}
+		else
+		{
+			return Plugin_Continue;
 		}
 	}
 	return Plugin_Continue;
@@ -234,7 +229,7 @@ public Action gerisayim(Handle timer)
 			FFAyarla(1);
 			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
+				if (IsValidClient(i, true) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
 				{
 					CanWalk(i, true);
 					if (takim[i][0] != -1 && duo)
@@ -246,9 +241,7 @@ public Action gerisayim(Handle timer)
 			}
 		}
 		else
-		{
 			PrintHintTextToAll("[PUBG] Oyunun başlamasına son %d saniye.", gerisayim_sure);
-		}
 	}
 	else
 		return Plugin_Stop;
@@ -263,71 +256,76 @@ public Action OnClientDeath(Event event, const char[] name, bool dontBroadcast)
 		int victim = GetClientOfUserId(event.GetInt("userid"));
 		if (duo)
 		{
-			if(OyuncuSayisiAl(CS_TEAM_T) == 2)
+			if (OyuncuSayisiAl(CS_TEAM_T) == 2)
 			{
-				if(attacker == victim)
+				if (attacker == victim)
 				{
 					for (int i = 1; i <= MaxClients; i++)
 					{
-						if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i)){
+						if (IsValidClient(i, true) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
+						{
 							attacker = i;
-							break;}
+							break;
+						}
 					}
 				}
-				if(takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0])
-				FinishTheGame();
-				if (IsValidClient(attacker))
+				if (takim[attacker][0] != -1 && IsPlayerAlive(takim[attacker][0]))
 				{
-					Silahlari_Sil(attacker);
-					GivePlayerItem(attacker, "weapon_knife");
+					FinishTheGame();
+					if (IsValidClient(attacker, true))
+					{
+						Silahlari_Sil(attacker);
+						GivePlayerItem(attacker, "weapon_knife");
+					}
+					if (IsValidClient(takim[attacker][0], true))
+					{
+						Silahlari_Sil(takim[attacker][0]);
+						GivePlayerItem(takim[attacker][0], "weapon_knife");
+					}
+					PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01ve \x0E%N \x01Kazandı!", attacker, takim[attacker][0]);
 				}
-				if (IsValidClient(takim[attacker][0]))
+				else if (OyuncuSayisiAl(CS_TEAM_T) == 1)
 				{
-					Silahlari_Sil(takim[attacker][0]);
-					GivePlayerItem(takim[attacker][0], "weapon_knife");
+					FinishTheGame();
+					if (victim == attacker)
+					{
+						for (int i = 1; i <= MaxClients; i++)
+						{
+							if (IsValidClient(i, true) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
+								attacker = i;
+						}
+					}
+					if (IsValidClient(attacker, true))
+					{
+						Silahlari_Sil(attacker);
+						GivePlayerItem(attacker, "weapon_knife");
+						PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
+					}
 				}
-				PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01ve \x0E%N \x01Kazandı!", attacker, takim[attacker][0]);
 			}
-			else if (OyuncuSayisiAl(CS_TEAM_T) == 1)
+			else
 			{
-				FinishTheGame();
-				if (victim == attacker)
+				if (OyuncuSayisiAl(CS_TEAM_T) == 1)
 				{
-					for (int i = 1; i <= MaxClients; i++)
+					FinishTheGame();
+					if (victim == attacker)
 					{
-						if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
-							attacker = i;
+						for (int i = 1; i <= MaxClients; i++)
+						{
+							if (IsValidClient(i, true) && GetClientTeam(i) == CS_TEAM_T && IsPlayerAlive(i))
+								attacker = i;
+						}
 					}
-				}
-				if (IsValidClient(attacker))
-				{
-					Silahlari_Sil(attacker);
-					GivePlayerItem(attacker, "weapon_knife");
-					PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
+					if (IsValidClient(attacker, true))
+					{
+						Silahlari_Sil(attacker);
+						GivePlayerItem(attacker, "weapon_knife");
+						PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
+					}
 				}
 			}
 		}
-		else
-		{
-			if (OyuncuSayisiAl(CS_TEAM_T) == 1)
-			{
-				FinishTheGame();
-				if (victim == attacker)
-				{
-					for (int i = 1; i <= MaxClients; i++)
-					{
-						if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
-							attacker = i;
-					}
-				}
-				if (IsValidClient(attacker))
-				{
-					Silahlari_Sil(attacker);
-					GivePlayerItem(attacker, "weapon_knife");
-					PrintToChatAll("[SM] \x04Oyunu \x0E%N \x01Kazandı!", attacker);
-				}
-			}
-		}
+		return Plugin_Continue;
 	}
 	return Plugin_Continue;
 }

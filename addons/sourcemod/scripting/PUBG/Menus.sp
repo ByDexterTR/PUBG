@@ -314,6 +314,14 @@ public int takim_onaymenu(Menu menu, MenuAction action, int client, int position
 						TeleportEntity(client, konum, NULL_VECTOR, NULL_VECTOR);
 						takim[client][0] = StringToInt(item);
 						takim[StringToInt(item)][0] = client;
+						for (int i = 1; i <= MaxClients; i++)if (IsValidClient(i, true) && !warden_iswarden(i) && i != client)
+						{
+							SetListenOverride(client, i, Listen_No);
+							SetListenOverride(i, client, Listen_No);
+						}
+						SetListenOverride(takim[client][0], client, Listen_Yes);
+						SetListenOverride(client, takim[client][0], Listen_Yes);
+						PrintToChatAll("Artık %d %d ile konuşabiliyor za", client, takim[client][0]);
 					}
 					else if (!IsPlayerAlive(StringToInt(item)))
 						PrintToChat(client, " \x07[PUBG] \x01Takım isteğini kabul etmek istediğin kişi ölmüş.");
