@@ -69,19 +69,16 @@ void MapStartDownload()
 	PrecacheSoundAny("Plugin_Merkezi/PUBG/pubg_game_start.mp3");
 }
 
-void SetCvar(char cvarName[64], int value)
+stock void SetCvar(char[] cvarName, int value)
 {
-	Handle IntCvar = FindConVar(cvarName);
+	ConVar IntCvar = FindConVar(cvarName);
 	if (IntCvar == null)return;
-	
-	int flags = GetConVarFlags(IntCvar);
+	int flags = IntCvar.Flags;
 	flags &= ~FCVAR_NOTIFY;
-	SetConVarFlags(IntCvar, flags);
-	
-	SetConVarInt(IntCvar, value);
-	
+	IntCvar.Flags = flags;
+	IntCvar.IntValue = value;
 	flags |= FCVAR_NOTIFY;
-	SetConVarFlags(IntCvar, flags);
+	IntCvar.Flags = flags;
 }
 
 void Ekran_Renk_Olustur(int client, int Renk[4])
