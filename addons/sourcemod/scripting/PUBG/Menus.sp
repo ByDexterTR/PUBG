@@ -4,7 +4,7 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 	{
 		char Item[32];
 		menu.GetItem(position, Item, sizeof(Item));
-		if (StrEqual(Item, "Start", false))
+		if (strcmp(Item, "Start", false) == 0)
 		{
 			if (OyuncuSayisiAl(CS_TEAM_T) != 0)
 			{
@@ -74,7 +74,7 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 				return;
 			}
 		}
-		else if (StrEqual(Item, "Stop", false))
+		else if (strcmp(Item, "Stop", false) == 0)
 		{
 			FinishTheGame();
 			PrintToChatAll("[SM] \x02PUBG \x01Oyunu \x0E%N \x01Tarafından Bitirildi!", client);
@@ -94,14 +94,14 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 				}
 			}
 		}
-		else if (StrEqual(Item, "AirDrop", false))
+		else if (strcmp(Item, "AirDrop", false) == 0)
 		{
 			//float AimOrigin[3];
 			GetAimCoords(client, AirDropLoc);
 			SendAirDrop(AirDropLoc);
 			PrintHintText(client, "[PUBG] Air drop yola çıktı!");
 		}
-		else if (StrEqual(Item, "Ayarlar", false))
+		else if (strcmp(Item, "Ayarlar", false) == 0)
 		{
 			PUBG_AyarMenu_Ac(client).Display(client, MENU_TIME_FOREVER);
 		}
@@ -137,14 +137,14 @@ public int pubg_genelayarmenu(Menu menu, MenuAction action, int client, int posi
 	{
 		char item[32];
 		menu.GetItem(position, item, sizeof(item));
-		if (StrEqual(item, "spawn"))
+		if (strcmp(item, "spawn", false) == 0)
 			PUBG_AyarMenu_Ac2(client).Display(client, MENU_TIME_FOREVER);
-		else if (StrEqual(item, "duo"))
+		else if (strcmp(item, "duo", false) == 0)
 		{
 			duo = !duo;
 			PUBG_AyarMenu_Ac(client).Display(client, MENU_TIME_FOREVER);
 		}
-		else if (StrEqual(item, "bunny"))
+		else if (strcmp(item, "bunny", false) == 0)
 		{
 			bac = !bac;
 			PUBG_AyarMenu_Ac(client).Display(client, MENU_TIME_FOREVER);
@@ -187,14 +187,14 @@ public int pubg_spawnayarmenu(Menu menu, MenuAction action, int client, int posi
 	{
 		char item[32];
 		menu.GetItem(position, item, sizeof(item));
-		if (StrEqual(item, "Hide"))
+		if (strcmp(item, "Hide", false) == 0)
 		{
 			YeriTemizle(3);
 			gozukuyor = false;
 			gorenoyuncu = -1;
 			PUBG_AyarMenu_Ac2(client).Display(client, MENU_TIME_FOREVER);
 		}
-		else if (StrEqual(item, "Show"))
+		else if (strcmp(item, "Show", false) == 0)
 		{
 			ShowModels();
 			gozukuyor = true;
@@ -295,7 +295,7 @@ public int takim_onaymenu(Menu menu, MenuAction action, int client, int position
 	{
 		char item[32];
 		menu.GetItem(position, item, sizeof(item));
-		if (StrContains(item, "reddet") != -1)
+		if (strcmp(item, "reddet", false) != -1)
 		{
 			takim[StringToInt(item)][2] = 0;
 			takim[client][2] = 0;

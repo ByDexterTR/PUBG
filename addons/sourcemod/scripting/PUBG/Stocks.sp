@@ -81,7 +81,7 @@ stock void SetCvar(char[] cvarName, int value)
 	IntCvar.Flags = flags;
 }
 
-void Ekran_Renk_Olustur(int client, int Renk[4])
+stock void Ekran_Renk_Olustur(int client, int Renk[4])
 {
 	int clients[1];
 	clients[0] = client;
@@ -146,7 +146,7 @@ void RastgeleSilahCikar(int client, int class)
 	}
 }
 
-void Silahlari_Sil(int client)
+stock void Silahlari_Sil(int client)
 {
 	if (IsValidClient(client, true))
 	{
@@ -157,7 +157,7 @@ void Silahlari_Sil(int client)
 			{
 				if (!RemovePlayerItem(client, wpnEnt))
 					break;
-				AcceptEntityInput(wpnEnt, "kill");
+				RemoveEntity(wpnEnt);
 			}
 			
 			if (wpnSlotIndex == 3)
@@ -182,7 +182,7 @@ void Silahlari_Sil(int client)
 							{
 								if (RemovePlayerItem(client, weapon))
 								{
-									AcceptEntityInput(weapon, "kill");
+									RemoveEntity(weapon);
 								}
 							}
 						}
@@ -265,21 +265,21 @@ void YeriTemizle(int mode)
 			GetEdictClassname(i, weapon, sizeof(weapon));
 			if (GetEntDataEnt2(i, g_WeaponParent) == -1)
 				if (StrContains(weapon, "weapon_") != -1)
-				AcceptEntityInput(i, "kill");
+				RemoveEntity(i);
 		}
 		else if (mode == 2)
 		{
 			GetEntPropString(i, Prop_Data, "m_ModelName", modelyolu, sizeof(modelyolu));
 			if (StrContains(modelyolu, "pubg_") != -1 || StrContains(modelyolu, "de_nuke/hr_nuke/metal_crate_001/metal_crate_001_76_low") != -1)
-				AcceptEntityInput(i, "kill");
+				RemoveEntity(i);
 		}
 		else if (mode == 3)
 		{
 			GetEntPropString(i, Prop_Data, "m_ModelName", modelyolu, sizeof(modelyolu));
 			if (StrContains(modelyolu, "tm_balkan_variantg.mdl", false) != -1)
-				AcceptEntityInput(i, "kill");
+				RemoveEntity(i);
 			if (StrContains(modelyolu, "pubg_") != -1)
-				AcceptEntityInput(i, "kill");
+				RemoveEntity(i);
 		}
 	}
 }
@@ -303,66 +303,23 @@ stock bool IsValidClient(int client, bool nobots = true)
 	return IsClientInGame(client);
 }
 
-bool YetkiDurum(int client, char[] sFlags)
+stock bool YetkiDurum(int client, const char[] flags)
 {
-	if (StrEqual(sFlags, "public", false) || StrEqual(sFlags, "", false))
-		return true;
-	if (StrEqual(sFlags, "none", false))
-		return false;
-	AdminId id = GetUserAdmin(client);
-	if (id == INVALID_ADMIN_ID)
-		return false;
-	if (CheckCommandAccess(client, "sm_not_a_command", ADMFLAG_ROOT, true))
-		return true;
-	int iCount, iFound, flags;
-	if (StrContains(sFlags, ";", false) != -1)
+	int iCount = 0;
+	char sflagNeed[22][8], sflagFormat[64];
+	bool bEntitled = false;
+	Format(sflagFormat, sizeof(sflagFormat), flags);
+	ReplaceString(sflagFormat, sizeof(sflagFormat), " ", "");
+	iCount = ExplodeString(sflagFormat, ",", sflagNeed, sizeof(sflagNeed), sizeof(sflagNeed[]));
+	for (int i = 0; i < iCount; i++)
 	{
-		int c = 0, iStrCount = 0;
-		while (sFlags[c] != '\0')
+		if ((GetUserFlagBits(client) & ReadFlagString(sflagNeed[i])) || (GetUserFlagBits(client) & ADMFLAG_ROOT))
 		{
-			if (sFlags[c++] == ';')
-				iStrCount++;
-		}
-		iStrCount++;
-		char[][] sTempArray = new char[iStrCount][30];
-		ExplodeString(sFlags, ";", sTempArray, iStrCount, 30);
-		for (int i = 0; i < iStrCount; i++)
-		{
-			flags = ReadFlagString(sTempArray[i]);
-			iCount = 0;
-			iFound = 0;
-			for (int j = 0; j <= 20; j++)
-			{
-				if (flags & (1 << j))
-				{
-					iCount++;
-					
-					if (GetAdminFlag(id, view_as<AdminFlag>(j)))
-						iFound++;
-				}
-			}
-			if (iCount == iFound)
-				return true;
+			bEntitled = true;
+			break;
 		}
 	}
-	else
-	{
-		flags = ReadFlagString(sFlags);
-		iCount = 0;
-		iFound = 0;
-		for (int i = 0; i <= 20; i++)
-		{
-			if (flags & (1 << i))
-			{
-				iCount++;
-				if (GetAdminFlag(id, view_as<AdminFlag>(i)))
-					iFound++;
-			}
-		}
-		if (iCount == iFound)
-			return true;
-	}
-	return false;
+	return bEntitled;
 }
 
 
@@ -381,4 +338,4 @@ int OyuncuSayisiAl(int team)
 		}
 	}
 	return oyuncusayisi;
-} 
+}

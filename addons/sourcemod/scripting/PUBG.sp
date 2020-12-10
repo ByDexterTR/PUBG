@@ -176,7 +176,7 @@ public Action OnStartTouch(int entity, int client)
 public Action Remove_Entity(Handle timer, int entity)
 {
 	if (IsValidEntity(entity))
-		AcceptEntityInput(entity, "Kill");
+		RemoveEntity(entity);
 	return Plugin_Stop;
 }
 
