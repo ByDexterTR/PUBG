@@ -19,26 +19,22 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 					if (oyuncuspawn_sayisi + 1 < OyuncuSayisiAl(CS_TEAM_T))
 					{
 						PrintToChat(client, "[SM] \x01Oyuncu spawn sayısı yetersiz.");
-						delete menu;
 						return;
 					}
 				}
 				if (OyuncuSayisiAl(CS_TEAM_T) <= g_pubg_limit.IntValue)
 				{
 					PrintToChat(client, "[SM] \x01Yeterli sayıda oyuncu bulunmadığı için oyun iptal edildi.");
-					delete menu;
 					return;
 				}
 				if (oyuncuspawn_sayisi + 1 <= 0)
 				{
 					PrintToChat(client, "[SM] \x01Yeterli sayıda Oyuncu spawnı bulunmadığı için oyun iptal edildi. Pubg menüsünden spawn noktaları oluşturabilirsiniz.");
-					delete menu;
 					return;
 				}
 				if (silahspawn_sayisi + 1 <= 0)
 				{
 					PrintToChat(client, "[SM] \x01Yeterli sayıda Silah spawnı bulunmadığı için oyun iptal edildi. Pubg menüsünden spawn noktaları oluşturabilirsiniz.");
-					delete menu;
 					return;
 				}
 				for (int i = 1; i <= MaxClients; i++)
@@ -70,7 +66,6 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 			else
 			{
 				PrintHintText(client, "[PUBG] Yaşayan sadece 1 oyuncu var!");
-				delete menu;
 				return;
 			}
 		}
@@ -106,7 +101,7 @@ public int pubg_Handle(Menu menu, MenuAction action, int client, int position)
 			PUBG_AyarMenu_Ac(client).Display(client, MENU_TIME_FOREVER);
 		}
 	}
-	if (action == MenuAction_Cancel)
+	else if (action == MenuAction_End)
 	{
 		delete menu;
 	}
