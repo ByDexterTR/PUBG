@@ -18,7 +18,7 @@
 public Plugin myinfo = 
 {
 	name = "Playerunkown Battlegrounds - Jailbreak Game", 
-	author = "quantum. - Emur - ByDexter(Mentally support)", 
+	author = "quantum. - Emur - ByDexter", 
 	description = "PUBG plugin specially made for Turkish jailbreak servers.", 
 	version = "0.8.3 - Beta", 
 	url = "https://pluginmerkezi.com/"
