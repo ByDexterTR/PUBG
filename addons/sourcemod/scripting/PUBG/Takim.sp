@@ -2,13 +2,13 @@ public Action command_pubgtakim(int client, int args)
 {
 	if (basladi)
 	{
-		if (takim[client][2] != 1 && duo)
+		if (!duo)
+			ReplyToCommand(client, "[SM] \x01Pubg şuanda takımsız oynanıyor.");
+		else if (takim[client][2] != 1 && duo)
 		{
 			takim[client][2] = 1;
 			takim_OyuncuMenusuAc().Display(client, MENU_TIME_FOREVER);
 		}
-		else if (!duo)
-			ReplyToCommand(client, "[SM] \x01Pubg şuanda takımsız modda oynanıyor.");
 		else if (takim[client][0] != -1)
 			ReplyToCommand(client, "[SM] \x01Zaten bir takımdasın.");
 		else
